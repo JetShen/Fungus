@@ -1,9 +1,9 @@
 {
-  "name": "electron-vite-react",
-  "version": "2.1.0",
+  "name": "lowmusic",
+  "version": "0.0.1",
   "main": "dist-electron/main/index.js",
   "description": "Electron Vite React boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "author": "@JetShen",
   "license": "MIT",
   "private": true,
   "debug": {
@@ -25,6 +25,7 @@
     "@vitejs/plugin-react": "^3.1.0",
     "electron": "^23.1.1",
     "electron-builder": "^23.6.0",
+    "electron-packager": "^17.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sass": "^1.58.3",

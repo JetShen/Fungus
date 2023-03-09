@@ -2,11 +2,9 @@ const fs = require('fs');
 
 
 function writer(list){
-    console.log(list)
     const jsonData = JSON.stringify(list);
     fs.writeFile('data.json', jsonData, (err) => {
     if (err) throw err;
-    console.log('Archivo guardado correctamente');
     });
 }
 
@@ -22,11 +20,9 @@ function reader(callback) {
   }
 
   function writerH(list){
-    console.log(list)
     const jsonData = JSON.stringify(list);
     fs.writeFile('history.json', jsonData, (err) => {
     if (err) throw err;
-    console.log('Archivo guardado correctamente');
     });
 }
 

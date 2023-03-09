@@ -5,9 +5,10 @@ function PlayList(list_prop) {
         <div>
             <h1>PlayList</h1>
             {list_prop.list.map(song => (
-            <div key={song.soundURL} >
+            <div key={song.id} >
                 <p>{song.title}</p>
                 <button onClick={() => list_prop.setUrl(song)}>Reproducir</button>
+                <button onClick={() => list_prop.Delet(song)}>Delete</button>
             </div>
             ))}
         </div>

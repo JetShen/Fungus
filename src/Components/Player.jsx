@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
-import { writerH, readerH } from '../Scripts/listjs';
+import { writerH, readerH } from "../Scripts/listjs";
 
 function Player(prop) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -9,21 +9,19 @@ function Player(prop) {
   const [duration, setDuration] = useState(0);
   const [seekTime, setSeekTime] = useState(null);
   const playerRef = useRef(null);
-  const [shuffle, setShuffle] = useState(false)
-  const [history, setHistory] = useState([])
-  const [anterior, setAnterior] = useState(0)
+  const [shuffle, setShuffle] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
     readerH((err, list) => {
       if (err) {
-        console.error('Error al leer el archivo:', err);
+        console.error("Error al leer el archivo:", err);
       } else {
         setHistory(list);
       }
     });
   }, []);
-
-
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -32,11 +30,9 @@ function Player(prop) {
     setIsPlaying(false);
   };
 
-  const handleRandom = ()=>{
+  const handleRandom = () => {
     let song;
-    song = history.pop()
-    console.log(song)
-    console.log("ayud")
+    song = history.pop();
   };
 
   const handleProgres = (e) => {
@@ -54,27 +50,34 @@ function Player(prop) {
     }
   }, [seekTime]);
 
+  function setWriUrl(history, song) {
+    setHistory([...history, song]);
+    writerH([...history, song]);
+    prop.setUrl(song);
+  }
+
+
   const handlePlaylist = (index) => {
     let song;
     let shuffleN;
+    if(index>=prop.list.length || index<0){index = 0; setIndex(index);}
     if(shuffle){
       shuffleN= Math.floor(Math.random() * prop.list.length);
       song = prop.list[shuffleN]
       if (typeof song !== "undefined") {
-        setHistory([...history, song])
-        writerH([...history, song])
-        prop.setUrl(song)
+        if(history.length>14){history.shift();}
+        setWriUrl(history,song)
         ;}
     }else{
-      if(index+1==prop.list.length || index<0){song = prop.list[0]}else{song = prop.list[index+1]}
+      song = prop.list[index]
         if (typeof song !== "undefined") {
-          setHistory([...history, song])
-          writerH([...history, song])
-          prop.setUrl(song)
+          if(history.length>14){history.shift();}
+          setWriUrl(history,song)
           ;}
     };
+    setIndex(index)
   };
-  
+
 
   return (
     <>
@@ -87,30 +90,29 @@ function Player(prop) {
         onProgress={handleProgres}
         onDuration={handleDuration}
         ref={playerRef}
-        onEnded={() => handlePlaylist(prop.Url_call.id) }
+        onEnded={() => handlePlaylist(index+1)}
       />
       <p>{prop.Url_call.title}</p>
       {shuffle ? (
-          <button onClick={() =>handleRandom()}>← on</button>
-        ) : (
-          <button onClick={() => handlePlaylist(prop.Url_call.id - 2) }>←</button>
-        )}
-      
+        <button onClick={() => handleRandom()}>← on</button>
+      ) : (
+        <button onClick={() => handlePlaylist(index -1)}>←</button>
+      )}
+
       {isPlaying ? (
-          <button onClick={handleStop}>Stop</button>
-        ) : (
-          <button onClick={handlePlay}>Play</button>
-        )}
-        
+        <button onClick={handleStop}>Stop</button>
+      ) : (
+        <button onClick={handlePlay}>Play</button>
+      )}
 
-        <button onClick={() => handlePlaylist(prop.Url_call.id) }>→</button>
+      <button onClick={() => handlePlaylist(index + 1)}>→</button>
 
-        {shuffle ? (
-          <button onClick={() =>setShuffle(false)}>Off Shuffle</button>
-        ) : (
-          <button onClick={() =>setShuffle(true)}>On Shuffle</button>
-        )}
-        
+      {shuffle ? (
+        <button onClick={() => setShuffle(false)}>Off Shuffle</button>
+      ) : (
+        <button onClick={() => setShuffle(true)}>On Shuffle</button>
+      )}
+
       <input
         type="range"
         min="0.0"
@@ -119,11 +121,11 @@ function Player(prop) {
         value={volumen}
         onChange={(e) => setVolumen(parseFloat(e.target.value))}
       />
-      <input 
-        type="range" 
-        min="0" 
-        max={duration} 
-        value={seekTime !== null ? seekTime : prgss} 
+      <input
+        type="range"
+        min="0"
+        max={duration}
+        value={seekTime !== null ? seekTime : prgss}
         step="1"
         onChange={(e) => setSeekTime(parseFloat(e.target.value))}
       />
