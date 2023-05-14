@@ -82,10 +82,11 @@ function Player(prop) {
   return (
     <>
       <ReactPlayer
+        
         url={prop.Url_call.soundURL}
         playing={isPlaying}
-        width={0}
-        height={0}
+        width={200}
+        height={200}
         volume={volumen}
         onProgress={handleProgres}
         onDuration={handleDuration}

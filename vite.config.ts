@@ -15,6 +15,7 @@ export default defineConfig(({ command }) => {
 
   return {
     resolve: {
+      webSecurity: false,
       alias: {
         '@': path.join(__dirname, 'src')
       },
@@ -38,17 +39,21 @@ export default defineConfig(({ command }) => {
           // Allow use `import.meta.env.VITE_SOME_KEY` in Electron-Main
           loadViteEnv(),
         ],
+        
       }),
       // Use Node.js API in the Renderer-process
       renderer({
         nodeIntegration: true,
+        
       }),
     ],
     server: !!process.env.VSCODE_DEBUG ? (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
       return {
+        
         host: url.hostname,
         port: +url.port,
+        
       }
     })() : undefined,
     clearScreen: false,

@@ -2,13 +2,13 @@
   "name": "lowmusic",
   "version": "0.0.1",
   "main": "dist-electron/main/index.js",
-  "description": "Electron Vite React boilerplate.",
+  "description": "Electron vite Music App",
   "author": "@JetShen",
   "license": "MIT",
   "private": true,
   "debug": {
     "env": {
-      "VITE_DEV_SERVER_URL": "http://127.0.0.1:7777/"
+      "VITE_DEV_SERVER_URL": "https://127.0.0.1:7777/"
     }
   },
   "scripts": {
@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "fs": "^0.0.1-security",
+    "isdev": "^1.0.1",
     "vite-tsconfig-paths": "^4.0.5"
   }
 }

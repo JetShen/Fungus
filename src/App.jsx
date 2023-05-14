@@ -4,9 +4,13 @@ import Player from "./Components/Player";
 import PlayList from './Components/PlayList';
 import { writer, reader } from './Scripts/listjs';
 import { leer } from './makeplaylist';
+var isDev = require('isDev')
 
-
-console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
+if(isDev) {
+  console.log("In Development!")
+} else {
+  console.log("Not in Development!")
+}
 
 function App() {
   const [playlist, setPlaylist] = useState([])

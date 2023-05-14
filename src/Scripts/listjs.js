@@ -35,10 +35,19 @@ function readerH(callback) {
         callback(null, list);
       }
     });
+}
+
+function read(callback) {
+    fs.readFile('../package,json', (err, data) => {
+      if (err) {
+        callback(err, null);
+      } else {
+        const list = JSON.parse(data);
+        callback(null, list);
+      }
+    });
   }
 
 
 
-
-
-export { writer, reader, readerH, writerH};
+export { writer, reader, readerH, writerH, read};

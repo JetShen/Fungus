@@ -8,6 +8,7 @@ import preload from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
 import pkg from './package.json'
 import tsConfigPaths from "vite-tsconfig-paths";
+import CrossProcessExports from 'electron'
 
 let preloadHasReady = false
 
@@ -18,6 +19,7 @@ export default defineConfig(({ command }) => {
   const sourcemap = command === 'serve' || !!process.env.VSCODE_DEBUG
 
   return {
+    
     resolve: {
       alias: {
         '@': path.join(__dirname, 'src')
@@ -77,6 +79,7 @@ export default defineConfig(({ command }) => {
     ],
     server: !!process.env.VSCODE_DEBUG ? (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
+
       return {
         host: url.hostname,
         port: +url.port,
