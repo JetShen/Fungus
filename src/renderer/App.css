@@ -1,0 +1,201 @@
+html {
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100%;
+    overflow: hidden;
+}
+.caja{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background-color: black;
+    margin: 0; 
+    height: 100%;
+    overflow: hidden;
+}
+.searchnav {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    width: 100vw;
+    height: 3em;
+    background-color: rgba(41, 41, 41, 0.493);
+    padding: 0;
+    margin: 0;
+}
+
+
+.Searchbar{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5em;
+    margin: 1em;
+}
+.SearchbarInput{
+    border-radius: 0.5em;
+    border: 0.17em solid;
+    width: 20em;
+}
+.SearchbarInput:focus{
+    outline: none;
+    border: 0.17em solid #ffffff;
+    box-shadow: 0 0 0.5em #ffffff;
+}
+
+.SearchbarButton{
+    border-radius: 0.5em;
+    border: none;
+    background: none;
+    color: white;
+    font-weight: bold;
+}
+.SearchbarButton:hover{
+    cursor: pointer;
+    box-shadow: 0 0 0.5em #ffffff;
+}
+.ResultContainer{
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 60vw;
+    margin: 0;
+    padding: 0;
+    height: 93vh;
+}
+.ResultBox{
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow-y:  scroll;
+    overflow-x: hidden;
+    width: 100%;
+    height: 30em;
+}
+.ResultBox::-webkit-scrollbar {
+    display: none;
+}
+
+.ResultSong{
+    background-color: rgba(41, 41, 41, 0.493);
+    border-radius: 0.5em;
+    margin: 0 1em 1em 1em;
+    padding: 0.5em;
+    display: flex;
+    width: 90%;
+    height: 6em;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.ResultSong img{
+    width: 6em;
+    height: auto;
+    border-radius: 1.5em;
+}
+.buttonDiv span{
+    color: white;
+    font-size: 2em;
+}
+.ResultSong span:hover{
+    cursor: pointer;
+}
+.ResultSong span:active{
+    color: gray;
+}
+.innerDiv{
+    margin-left: 1em;
+}
+.buttonDiv{
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    align-items: center;
+}
+
+
+/* Playlist */
+.playlistcontainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 93vh;
+    background-color: white;
+
+    transition: 1200ms;
+}
+.playlistTitle{
+    position: absolute;
+
+    transition: 1s;
+}
+.box{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    height: 9vh;
+    gap: 1em; 
+    border: 1px red solid;
+}
+.box button{
+    background: none;
+    border: none;
+    color: black;
+    font-size: 1.5em;
+    margin: 0;
+    padding: 0;
+}
+.box button:hover{
+    cursor: pointer;
+}
+.box button:active{
+    color: gray;
+}
+/* lyrics */
+.lyricsbox{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+    width: 20vw;
+    height: 93vh;   
+    right: 0;
+
+}
+
+/* Contenedor principal */
+.container {
+    display: grid;
+    grid-template-columns: 20vw 60vw 20vw; /* Columnas para Playlist, Resultado y Lyrics */
+    grid-template-rows: 1fr; /* Una fila que se ajusta automáticamente */
+    height: 93vh; /* Ajustar la altura del contenedor principal */
+}
+
+/* Componente Playlist */
+.playlist {
+    grid-column: 1; /* Ocupa la primera columna */
+}
+
+/* Componente Resultado */
+.resultado {
+    grid-column: 2; /* Ocupa la segunda columna */
+}
+
+/* Componente Lyrics */
+.lyrics {
+    grid-column: 3; /* Ocupa la tercera columna */
+}
