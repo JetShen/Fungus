@@ -8,9 +8,11 @@ export type Song = {
 };
 
 export type Folder = {
+    expanded: boolean;
     name: string;
     list: Song[];
     cod: number;
+    color: string;
 };
 
 export interface ResultSearch {

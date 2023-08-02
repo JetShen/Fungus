@@ -83,17 +83,20 @@ const folder = [
   {
     name: 'folder1',
     list: list,
-    cod: 1
+    cod: 1,
+    color: 'red'
   },
   {
     name: 'folder2',
     list: list,
-    cod: 2
+    cod: 2,
+    color: 'blue'
   },
   {
     name: 'folder3',
     list: list,
-    cod: 3
+    cod: 3,
+    color: 'green'
   },
 ]
 
@@ -120,19 +123,25 @@ function Main() {
 
   return (
     <>
-      <Searchbar setResult={setResult} />
+      
       <div className="container">
+        <div className="search">
+          <Searchbar setResult={setResult} />
+        </div>
         <div className="playlist">
           <Playlist folders={folder} playlistRef={playlistRef} setCurrentSong={setCurrentSong} toggleList={toggleList} setToggleList={setToggleList} />
         </div>
-        <div className="resultado">
-          <Searchresult result={result} setCurrentSong={setCurrentSong} />
+        {/* <div className="resultado">
+          <Searchresult result={result} toggleList={toggleList} setCurrentSong={setCurrentSong} />
         </div>
         <div className="lyrics">
           <Lyrics />
         </div>
+        <div className="player">
+          <Player currentSong={currentSong}/>
+        </div> */}
       </div>
-      {/* <Player currentSong={currentSong}/> */}
+      
     </>
   );
 }

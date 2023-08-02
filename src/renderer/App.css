@@ -1,34 +1,77 @@
-html {
+*{
     padding: 0;
     margin: 0;
+}
+html {
     width: 100vw;
     height: 100%;
     overflow: hidden;
 }
-.caja{
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
-}
-
 body {
     background-color: black;
     margin: 0; 
     height: 100%;
     overflow: hidden;
 }
+
+/* Contenedor principal */
+.container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    font-size: 5em;
+    width: 100vw;
+    height: 100vh;
+}
+/* Search */
+.search{
+    width: 100%;
+    height: 100%;
+    grid-area: 1 / 1 / 2 / 5;
+}
+/*  Playlist */
+.playlist {
+    top: 0.1em;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    grid-area: 2 / 1 / 10 / 2;
+}
+
+/*  Resultado */
+.resultado {
+    width: 100%;
+    height: 100%;
+    grid-area: 2 / 2 / 10 / 4;
+}
+
+/*  Lyrics */
+.lyrics {
+    width: 100%;
+    height: 100%;
+    grid-area: 2 / 4 / 10 / 5;
+}
+
+.player{
+    width: 100%;
+    height: 100%;
+    grid-area: 10 / 1 / 12 / 5;
+}
+
+
+/* Componente Search */
 .searchnav {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
 
-    width: 100vw;
-    height: 3em;
+    width: 100%;
+    height: 100%;
     background-color: rgba(41, 41, 41, 0.493);
-    padding: 0;
-    margin: 0;
+    border-bottom: 0.1em solid white;
 }
 
 
@@ -38,12 +81,15 @@ body {
     justify-content: center;
     align-items: center;
     gap: 0.5em;
-    margin: 1em;
 }
 .SearchbarInput{
     border-radius: 0.5em;
-    border: 0.17em solid;
-    width: 20em;
+    border: 0.17em solid gray;
+    width: 30em;
+    height: 2em;
+    color: white;
+    background-color: transparent;
+
 }
 .SearchbarInput:focus{
     outline: none;
@@ -62,6 +108,127 @@ body {
     cursor: pointer;
     box-shadow: 0 0 0.5em #ffffff;
 }
+/* Playlist */
+.playlistcontainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(41, 41, 41, 0.493);
+    color: white;
+    font-size: 0.5em;
+    overflow: hidden;
+}
+.playlistTitle{
+    position: relative;
+
+}
+.box{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    height: 10%;
+    border-bottom: 0.01em solid white;
+}
+.box button{ /* Añadir animaion left 0.1em */
+    border: none;
+    background: none;
+    color: white;
+    font-size: 0.7em;
+    position: relative;
+    
+}
+.box button:hover{
+    cursor: pointer;
+}
+.box button:active{
+    color: gray;
+}
+.innerPlaylist{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 90%;
+    overflow-y: scroll;
+    top: 0.5em;
+    position: relative;
+}
+.innerPlaylist::-webkit-scrollbar {
+    display: none;
+}
+.outFolder{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.Folder{ 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 1.7em;
+}
+.folderName{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5em;
+    height: 60%;
+    width: 70%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.3em;
+}
+.PlaylistFolderName{
+    position: absolute;
+}
+.Folder i{
+    font-size: 0.5em;
+    color: white;
+
+}
+
+.Folder i:hover{
+    cursor: pointer;
+    
+}
+.music{
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-y: scroll;
+    overflow: hidden;
+    font-size: 0.4em;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+}
+.music::-webkit-scrollbar {
+    display: none;
+}
+.musicName{
+    position: relative;
+    overflow: hidden;
+
+}
+.musicName span{
+    
+    width: 100%;
+    height: 100%;
+}
+.musicName:hover{
+    cursor: pointer;
+}
+
+/* Result component */
 .ResultContainer{
     color: white;
     display: flex;
@@ -72,6 +239,7 @@ body {
     margin: 0;
     padding: 0;
     height: 93vh;
+    top: 0;
 }
 .ResultBox{
     color: white;
@@ -123,114 +291,6 @@ body {
     align-items: center;
 }
 
-
-/* Playlist */
-.playlistcontainer{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 93vh;
-    background-color: white;
-
-    transition: 1200ms;
-}
-.playlistTitle{
-    position: absolute;
-
-    transition: 1s;
-}
-.box{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    height: 9vh;
-    gap: 1em; 
-    border: 1px red solid;
-}
-.box button{
-    background: none;
-    border: none;
-    color: black;
-    font-size: 1.5em;
-    margin: 0;
-    padding: 0;
-}
-.box button:hover{
-    cursor: pointer;
-}
-.box button:active{
-    color: gray;
-}
-.innerPlaylist{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    overflow-y: scroll;
-    
-}
-.innerPlaylist::-webkit-scrollbar {
-    display: none;
-}
-.outFolder{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-.Folder{ 
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 9vh;
-    border: 1px red solid;
-}
-.folderName{
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5em;
-    color: black;
-    margin: 0;
-    padding: 0;
-    transition: 0.7s;
-    height: 60%;
-    width: 70%;
-    border: 0.2em black solid;
-}
-.PlaylistFolderName{
-    position: absolute;
-}
-.Folder i{
-    font-size: 2em;
-    color: black;
-
-    transition: 0.7s;
-}
-
-.Folder i:hover{
-    cursor: pointer;
-    
-}
-.music{
-    position: relative;
-    
-    overflow: hidden;
-    font-size: 0.8em;
-    transition: 1s;
-}
-.musicName{
-    position: relative;
-    overflow: hidden;
-    transition: 1s;
-}
-
 /* lyrics */
 .lyricsbox{
     display: flex;
@@ -243,27 +303,4 @@ body {
     height: 93vh;   
     right: 0;
 
-}
-
-/* Contenedor principal */
-.container {
-    display: grid;
-    grid-template-columns: 20vw 60vw 20vw; /* Columnas para Playlist, Resultado y Lyrics */
-    grid-template-rows: 1fr; /* Una fila que se ajusta automáticamente */
-    height: 93vh; /* Ajustar la altura del contenedor principal */
-}
-
-/* Componente Playlist */
-.playlist {
-    grid-column: 1; /* Ocupa la primera columna */
-}
-
-/* Componente Resultado */
-.resultado {
-    grid-column: 2; /* Ocupa la segunda columna */
-}
-
-/* Componente Lyrics */
-.lyrics {
-    grid-column: 3; /* Ocupa la tercera columna */
 }
