@@ -131,10 +131,10 @@ function Main() {
         <div className="playlist">
           <Playlist folders={folder} playlistRef={playlistRef} setCurrentSong={setCurrentSong} toggleList={toggleList} setToggleList={setToggleList} />
         </div>
-        {/* <div className="resultado">
+        <div className="resultado">
           <Searchresult result={result} toggleList={toggleList} setCurrentSong={setCurrentSong} />
         </div>
-        <div className="lyrics">
+        {/* <div className="lyrics">
           <Lyrics />
         </div>
         <div className="player">

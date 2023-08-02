@@ -1,4 +1,3 @@
-import { Key } from "react";
 import { Folder, Song } from "util/type";
 import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion"
@@ -67,13 +66,6 @@ export default function Playlist(props: any){
     );
   };
 
-    // {props.toggleList ? 
-    //   <i className="bi bi-door-open" onClick={toggle}></i>
-    //       : 
-      
-    //   <i className="bi bi-door-closed" ></i>
-    // }
-
   return (
     <>
       <motion.div
@@ -81,7 +73,7 @@ export default function Playlist(props: any){
         width: '100%'
       }}
       animate={{
-        width: props.toggleList ? '100%' : '40%' 
+        width: props.toggleList ? '98%' : '40%' 
       }}
       transition={{
         duration: 1,
@@ -105,12 +97,12 @@ export default function Playlist(props: any){
                 />
               </button>
               <motion.h3 
-              // initial={{
-              //   left: '50%'
-              // }}
-              // animate={{
-              //   left: props.toggleList ? '6%' : '3%'
-              // }}
+              initial={{
+                left: '50%'
+              }}
+              animate={{
+                left: props.toggleList ? '6%' : '3%'
+              }}
               transition={{
                 duration: 1,
               }}

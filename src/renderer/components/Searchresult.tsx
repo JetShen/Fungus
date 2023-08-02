@@ -1,31 +1,38 @@
-import { ResultSearch, Song } from "util/type";
+import { Song } from "util/type";
 import 'bootstrap-icons/font/bootstrap-icons.css'; 
-
+import { motion } from "framer-motion"
 
 export default function Searchresult(props: any){
     return (
         <>
             <div className="ResultContainer">
-                <h1 className="tittle"><strong>Result For: </strong> {props.result.query }</h1>
+                <p className="tittle"><strong>Result For: </strong> {props.result.query }</p>
                 <div className="ResultBox">
                     {Array.isArray(props.result.list) && props.result.list.map((music: Song, index: any) => {
                         return (
-                            <div className="ResultSong" key={index}>
+                            <motion.div
+                            initial={{
+                                opacity: 0,
+                                y: -50,
+                            }}
+                            animate={{
+                                opacity: 1,
+                                y: 0,
+                            }}
+                            transition={{
+                                delay: index * 0.2,
+                            }}
+                            className="ResultSong" key={index}>
                                 <img className="ResultImg" src={music.img} alt="img"/>
-                                <div className="innerDiv">
-                                    <h3 className="ResultName">{music.name}</h3>
-                                    <p className="ResultArtist">{music.artist}</p>
+                                <p className="musicname"><strong>{music.name}</strong> {music.artist}</p>
+                                
+                                <div id="play">
+                                 <i className="bi bi-play-fill" ></i>
                                 </div>
-                                {/* Music chart like soundcloud */}
-                                <div className="buttonDiv">
-                                    <span className="ResultPlay">
-                                        <i className="bi bi-play-fill"></i>
-                                    </span>
-                                    <span className="options">
-                                        <i className="bi bi-three-dots"></i>
-                                    </span>
+                                <div id="options"> 
+                                    <i className="bi bi-three-dots" ></i>
                                 </div>
-                            </div>
+                            </motion.div>
                         );
                     })}
                 </div>
