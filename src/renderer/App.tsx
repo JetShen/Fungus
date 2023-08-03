@@ -134,12 +134,12 @@ function Main() {
         <div className="resultado">
           <Searchresult result={result} toggleList={toggleList} setCurrentSong={setCurrentSong} />
         </div>
-        {/* <div className="lyrics">
-          <Lyrics />
+        <div className="lyrics">
+          <Lyrics currentSong={currentSong}/>
         </div>
         <div className="player">
           <Player currentSong={currentSong}/>
-        </div> */}
+        </div>
       </div>
       
     </>

@@ -1,15 +1,17 @@
-*{
+* {
     padding: 0;
     margin: 0;
 }
+
 html {
     width: 100vw;
     height: 100%;
     overflow: hidden;
 }
+
 body {
     background-color: black;
-    margin: 0; 
+    margin: 0;
     height: 100%;
     overflow: hidden;
 }
@@ -25,13 +27,13 @@ body {
     width: 100vw;
     height: 100vh;
 }
-/* Search */
-.search{
+
+.search {
     width: 100%;
     height: 100%;
     grid-area: 1 / 1 / 2 / 5;
 }
-/*  Playlist */
+
 .playlist {
     top: 0.1em;
     position: relative;
@@ -40,24 +42,24 @@ body {
     grid-area: 2 / 1 / 10 / 2;
 }
 
-/*  Resultado */
 .resultado {
     width: 100%;
     height: 100%;
     grid-area: 2 / 2 / 10 / 4;
 }
 
-/*  Lyrics */
 .lyrics {
+    top: 0.1em;
+    position: relative;
     width: 100%;
     height: 100%;
     grid-area: 2 / 4 / 10 / 5;
 }
 
-.player{
+.player {
     width: 100%;
     height: 100%;
-    grid-area: 10 / 1 / 12 / 5;
+    grid-area: 10 / 1 / 14 / 5;
 }
 
 
@@ -75,14 +77,15 @@ body {
 }
 
 
-.Searchbar{
+.Searchbar {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: 0.5em;
 }
-.SearchbarInput{
+
+.SearchbarInput {
     border-radius: 0.5em;
     border: 0.17em solid gray;
     width: 30em;
@@ -91,40 +94,45 @@ body {
     background-color: transparent;
 
 }
-.SearchbarInput:focus{
+
+.SearchbarInput:focus {
     outline: none;
     border: 0.17em solid #ffffff;
     box-shadow: 0 0 0.5em #ffffff;
 }
 
-.SearchbarButton{
+.SearchbarButton {
     border-radius: 0.5em;
     border: none;
     background: none;
     color: white;
     font-weight: bold;
 }
-.SearchbarButton:hover{
+
+.SearchbarButton:hover {
     cursor: pointer;
     box-shadow: 0 0 0.5em #ffffff;
 }
+
 /* Playlist */
-.playlistcontainer{
+.playlistcontainer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100%;
+    height: 98%;
     background-color: rgba(41, 41, 41, 0.493);
     color: white;
     font-size: 0.5em;
     overflow: hidden;
     border-radius: 0.4em;
 }
-.playlistTitle{
+
+.playlistTitle {
     position: relative;
 
 }
-.box{
+
+.box {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -133,21 +141,25 @@ body {
     height: 10%;
     border-bottom: 0.01em solid white;
 }
-.box button{
+
+.box button {
     border: none;
     background: none;
     color: white;
     font-size: 0.7em;
     position: relative;
-    
+
 }
-.box button:hover{
+
+.box button:hover {
     cursor: pointer;
 }
-.box button:active{
+
+.box button:active {
     color: gray;
 }
-.innerPlaylist{
+
+.innerPlaylist {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -157,16 +169,19 @@ body {
     top: 0.5em;
     position: relative;
 }
+
 .innerPlaylist::-webkit-scrollbar {
     display: none;
 }
-.outFolder{
+
+.outFolder {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
 }
-.Folder{ 
+
+.Folder {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -174,7 +189,8 @@ body {
     width: 100%;
     height: 1.7em;
 }
-.folderName{
+
+.folderName {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -186,20 +202,23 @@ body {
     overflow: hidden;
     border-radius: 0.3em;
 }
-.PlaylistFolderName{
+
+.PlaylistFolderName {
     position: absolute;
 }
-.Folder i{
+
+.Folder i {
     font-size: 0.5em;
     color: white;
 
 }
 
-.Folder i:hover{
+.Folder i:hover {
     cursor: pointer;
-    
+
 }
-.music{
+
+.music {
     display: flex;
     flex-direction: column;
     position: relative;
@@ -211,20 +230,24 @@ body {
 
     width: 100%;
 }
+
 .music::-webkit-scrollbar {
     display: none;
 }
-.musicName{
+
+.musicName {
     position: relative;
     overflow: hidden;
 
 }
-.musicName span{
-    
+
+.musicName span {
+
     width: 100%;
     height: 100%;
 }
-.musicName:hover{
+
+.musicName:hover {
     cursor: pointer;
 }
 
@@ -232,7 +255,7 @@ body {
 
 
 /* Result component */
-.ResultContainer{
+.ResultContainer {
     color: white;
     display: flex;
     flex-direction: column;
@@ -242,9 +265,11 @@ body {
     height: 100%;
     top: 0;
 }
-.tittle{
+
+.tittle {
     font-size: 0.5em;
 }
+
 .ResultBox {
     color: white;
     display: flex;
@@ -254,12 +279,13 @@ body {
     width: 100%;
     min-height: 0;
     height: 100%;
-  }
+}
+
 .ResultBox::-webkit-scrollbar {
     display: none;
 }
 
-.ResultSong{
+.ResultSong {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: 1fr;
@@ -273,51 +299,194 @@ body {
     padding: 0.1em;
     align-items: center;
 }
-.ResultSong:hover{
+
+.ResultSong:hover {
     background-color: rgba(41, 41, 41, 0.8);
 }
-.ResultSong i:hover{
+
+.ResultSong i:hover {
     cursor: pointer;
-    color: rgba(78, 77, 77, 0.8) ;
+    color: rgba(78, 77, 77, 0.8);
     transition: 0.3s;
 }
-.ResultSong i{
+
+.ResultSong i {
     font-size: 0.5em;
 }
-.ResultImg{
+
+.ResultImg {
     border-radius: 0.4em;
     width: 80%;
     height: auto;
     grid-area: 1 / 1 / 2 / 2;
 }
 
-.musicname{
+.musicname {
     font-size: 0.3em;
     grid-area: 1 / 2 / 2 / 4;
 }
 
-#play{
+#play {
     display: flex;
     align-items: center;
     grid-area: 1 / 6 / 2 / 7;
 }
 
-#options{
+#options {
     display: flex;
     align-items: center;
-    grid-area: 1 / 7 / 2 / 8; 
+    grid-area: 1 / 7 / 2 / 8;
 }
 
 /* lyrics */
-.lyricsbox{
+.lyricsbox {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: white;
-    padding: 0;
-    margin: 0;
-    width: 20vw;
-    height: 93vh;   
-    right: 0;
+    height: 98%;
+    background-color: rgba(41, 41, 41, 0.493);
+    color: white;
+    font-size: 0.5em;
+    overflow: hidden;
+    border-radius: 0.4em;
+}
 
+.Lyrics {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border-bottom: white 0.01em solid;
+}
+
+.innerlyricsbox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    top: -0.9em;
+    position: relative;
+}
+
+.lyricscontainer::-webkit-scrollbar {
+    display: none;
+}
+
+.lyricscontainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(41, 41, 41, 0.493);
+    width: 90%;
+    height: 80%;
+    padding: auto;
+    border-radius: 0.1em;
+    overflow: hidden;
+    overflow-y: scroll;
+    text-align: center;
+}
+
+.innerlyricsbox p {
+    font-size: 0.4em;
+
+}
+
+.lyricsSearch i:hover {
+    cursor: pointer;
+    color: rgba(78, 77, 77, 0.8);
+}
+
+
+/* player */
+.playercontainer{
+    bottom: 0;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    grid-template-rows: 1fr 2fr;
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    font-size: 0.5em;
+    background-color: rgba(41, 41, 41, 0.493);
+    color: white;
+    width: 100%;
+    height: 100%;
+}
+
+.songImg{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    grid-area: 1 / 1 / 3 / 3;
+}
+.songImg img{
+    width: 50%;
+    height: auto;
+    border-radius: 0.4em;
+}
+
+.songName{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    grid-area: 1 / 3 / 3 / 4;
+    width: 100%;
+    height: 100%;
+
+}
+
+.barmusic{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-area: 2 / 4 / 3 / 11;
+    width: 100%;
+    height: 100%;
+
+}
+.barmusic input[type=range] {
+    width: 90%;
+    height: 0.3em;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    border-radius: 0.4em;
+}
+
+.divbutton{
+    top: 0.8em;
+    position: relative;
+    grid-area: 1 / 6 / 2 / 9;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vol{
+    grid-area: 1 / 11 / 3 / 14;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.vol input[type=range] {
+    width: 40%;
+    height: 0.3em;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    border-radius: 0.4em;
 }
