@@ -10,8 +10,11 @@ export default function Playlist(props: any){
 
 
   useEffect(() => {
-    const newIsOpenList = props.folders.map(() => false);
-    setIsOpenList(newIsOpenList);
+    if(props.folders.length > 0){
+      setIsOpenList(props.folders.map(() => false));
+    } else{
+      setIsOpenList([]);
+    }
   }, [props.folders]);
 
   async function removeLetters(inputString: string): Promise<string> {

@@ -4,11 +4,11 @@ export type Song = {
     name: string;
     artist: string;
     img: string;
+    url: string;
     cod: number;
 };
 
 export type Folder = {
-    expanded: boolean;
     name: string;
     list: Song[];
     cod: number;
