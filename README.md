@@ -18,3 +18,4 @@ Basically a desktop application with the idea of not having to open google to li
 # Interface demo
 ![image](https://github.com/JetShen/ELowMP/assets/62623196/ac16a93e-396f-43f1-bfff-08136d9901dc)
 
+![image](https://github.com/JetShen/ELowMP/assets/62623196/0ef76764-3a70-490a-b492-307f657b61df)
