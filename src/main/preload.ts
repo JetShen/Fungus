@@ -26,4 +26,24 @@ const electronHandler = {
 
 contextBridge.exposeInMainWorld('electron', electronHandler);
 
+
+contextBridge.exposeInMainWorld('ruta', {
+  rutaMusic(path: string) {
+    return ipcRenderer.invoke('rutaMusic', path);
+  }
+})
+
+contextBridge.exposeInMainWorld('m3u8', {
+  getm3u8_url(url: string) {
+    return ipcRenderer.invoke('getm3u8_url', url);
+  }
+})
+
+contextBridge.exposeInMainWorld('search',{
+  fetchYT(query: string) {
+    return ipcRenderer.invoke('fetchYT', query);
+  }
+})
+
+
 export type ElectronHandler = typeof electronHandler;

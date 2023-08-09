@@ -1,19 +1,10 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import {getm3u8_url} from '../util/m3u8URL';
 
 class AppUpdater {
   constructor() {
@@ -56,18 +47,22 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+const getAssetPath = (...paths: string[]): string => {
+  return path.join(RESOURCES_PATH, ...paths);
+};
+
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
   }
 
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
+  
 
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
+  
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -75,10 +70,14 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      nodeIntegration: true,
+      webSecurity: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
+
     },
+    
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -92,6 +91,16 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
+  });
+
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    
+    // details.requestHeaders.Origin = 'https://www.google.com';
+
+
+    callback({
+        requestHeaders: details.requestHeaders
+    });
   });
 
   mainWindow.on('closed', () => {
@@ -112,6 +121,8 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+
+
 /**
  * Add event listeners...
  */
@@ -127,6 +138,39 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
+
+    ipcMain.handle('rutaMusic',(event, arg) => {
+      try{
+        const ruta = getAssetPath(arg);
+        return ruta;
+      }catch(e){
+        throw e;
+      }
+    
+    });
+
+    ipcMain.handle('getm3u8_url',(event, arg) => {
+      try{
+        const url = getm3u8_url(arg);
+        return url;
+      }catch(e){
+        throw e;
+      }
+    });
+
+    ipcMain.handle('fetchYT', async (event, arg) => {
+      const fetchYT = await import('../util/fetchYT');
+      try{
+        const body = await fetchYT.default(arg);
+        return body;
+      }catch(e){
+        throw e;
+      }
+    });
+
+
+
+
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the

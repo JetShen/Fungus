@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
-import { Song } from "util/type"; // Asegúrate de importar correctamente el tipo Song
+import { Video } from "scrape-youtube";
 
 
-export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
+export default function CombinedPlayer({ currentSong }: { currentSong: Video }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volumen, setVolumen] = useState(1);
   const [prgss, setPrgss] = useState(0);
@@ -11,6 +11,7 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
   const [seekTime, setSeekTime] = useState<number | null>(null);
   const playerRef = useRef<ReactPlayer>(null); 
   const [shuffle, setShuffle] = useState(false);
+  const [m3, setM3] = useState('');
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -21,7 +22,7 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
   };
 
   const handleRandom = () => {
-    // Implementa la lógica para reproducir aleatoriamente una canción
+    // add random function, wait for the playlist to be done
   };
 
   const handleProgres = (e: { playedSeconds: React.SetStateAction<number>; }) => {
@@ -35,7 +36,7 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
   const handleProgressChange = (e: { target: { value: string; }; }) => {
     const newSeekTime = parseFloat(e.target.value);
     setPrgss(newSeekTime);
-    setSeekTime(newSeekTime); // Asignamos el nuevo valor de búsqueda directamente
+    setSeekTime(newSeekTime);
   };
 
   const handleVolumeChange = (e: { target: { value: string; }; }) => {
@@ -44,20 +45,33 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
   };
 
   useEffect(() => {
-    if (seekTime !== null && playerRef.current) { // Agrega una verificación de null
+    if (seekTime !== null && playerRef.current) {
       playerRef.current.seekTo(seekTime);
       setSeekTime(null);
     }
   }, [seekTime]);
 
+  useEffect(()=>{
+    const obtenerM3 = async () => {
+      if(currentSong.title !== undefined){
+        const url = await window.m3u8.getm3u8_url(currentSong.link).then((res: any) => {
+          console.log("res", res)
+          return res
+        })
+        setM3(url)
+      }
+    }
+    obtenerM3()
+  }, [currentSong])
+
   return (
     <div className="playercontainer">
       <div className="songImg">
-        <img src={currentSong.img} alt="songImg" />
+        <img src={currentSong.thumbnail} alt="songImg" />
       </div>
       <div className="songName">
-        <strong>{currentSong.name}</strong>
-        <p>{currentSong.artist}</p>
+        <strong>{currentSong.title}</strong>
+        <p>{String(currentSong.channel)}</p>
       </div>
       <div className="divbutton">
         <i className="bi bi-shuffle" onClick={() => setShuffle(!shuffle)}></i>
@@ -95,7 +109,7 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
         />
       </div>
       <ReactPlayer
-        url={currentSong.url}
+        url={m3}
         playing={isPlaying}
         width={0}
         height={0}
@@ -103,20 +117,11 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Song }) {
         onProgress={handleProgres}
         onDuration={handleDuration}
         ref={playerRef}
-        config={
-          {
-            file:{
-              forceAudio: true,
-              attributes: {
-                crossOrigin: true,
-              }
-            },
-            youtube: {
-              playerVars: { origin: window.location.origin }
-              
-            }
+        attributes={{
+          file: {
+          'allow-cross-origin': true
           }
-        }
+        }}
       />
     </div>
   );

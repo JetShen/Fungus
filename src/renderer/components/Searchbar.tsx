@@ -1,21 +1,19 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default function Searchbar(props: any){
-    function callSearch(e:any){
-        e.preventDefault();
-        let url = e.target[0].value;
-        console.log(url);
 
-        let result = {
-            name: 'Cancion',
-            artist: 'Artista',
-            img: 'https://i.pinimg.com/1200x/85/85/65/8585659b3ebaeced8adacb35b90e0da8.jpg',
-            url: url,
-            cod: 0,
+    async function callSearch(e: any) {
+        e.preventDefault();
+        let query = e.target[0].value;
+        try {
+            let resultado = await window.search.fetchYT(query).then((res: Array<[]>) => {
+                return res
+            });
+            props.setResult({query: query, list: resultado});
+        } catch (error) {
+            console.error('Error:', error);
         }
-        props.setCurrentSong(result);
-        //setResult(search); [{},{},{},...,{} -> 10]
-    }
+      }
 
 
     return (

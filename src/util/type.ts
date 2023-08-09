@@ -1,21 +1,13 @@
-
-
-export type Song = {
-    name: string;
-    artist: string;
-    img: string;
-    url: string;
-    cod: number;
-};
+import { Video } from "scrape-youtube";
 
 export type Folder = {
     name: string;
-    list: Song[];
+    list: Video[];
     cod: number;
     color: string;
 };
 
 export interface ResultSearch {
     query: string;
-    list: Song[];  
+    list: Video[];  
 };

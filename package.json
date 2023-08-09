@@ -72,7 +72,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-player": "^2.12.0",
-    "react-router-dom": "^6.11.2"
+    "react-router-dom": "^6.11.2",
+    "scrape-youtube": "^2.4.0"
   },
   "devDependencies": {
     "@electron/notarize": "^1.2.3",
