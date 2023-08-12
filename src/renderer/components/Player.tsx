@@ -67,11 +67,11 @@ export default function CombinedPlayer({ currentSong }: { currentSong: Video }) 
   return (
     <div className="playercontainer">
       <div className="songImg">
-        <img src={currentSong.thumbnail} alt="songImg" />
+        <img src={currentSong.thumbnail} alt="" />
       </div>
       <div className="songName">
-        <strong>{currentSong.title}</strong>
-        <p>{String(currentSong.channel.name)}</p>
+        <strong>{currentSong.channel? currentSong.title : "Unknown Song"}</strong>
+        <p>{String(currentSong.channel? currentSong.channel.name : "Unknown Artist")}</p>
       </div>
       <div className="divbutton">
         <i className="bi bi-shuffle" onClick={() => setShuffle(!shuffle)}></i>

@@ -39,8 +39,7 @@ async function findManifestUrl(url: string): Promise<string | null> {
             if (
                 formatInfo.protocol === 'm3u8_native' &&
                 formatInfo.ext === 'mp4' &&
-                formatInfo.resolution === 'audio only' &&
-                formatInfo.source_preference === -1
+                formatInfo.resolution === 'audio only'
             ) {
                 const manifestUrl = formatInfo.url;
                 return manifestUrl;
