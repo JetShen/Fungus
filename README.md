@@ -13,6 +13,8 @@ Basically a desktop application with the idea of not having to open google to li
 - [ ] Play FM Radio
 
 # Demo
+https://github.com/user-attachments/assets/d8099e74-7d92-47ef-9816-e9e6ae8cc55a
+
 
 
 
