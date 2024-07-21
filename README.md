@@ -1,6 +1,8 @@
 # ELowMP
 Basically a desktop application with the idea of not having to open google to listen to music from YouTube and SoundCloud.
 
+### This project need **yt-dlp** for m3u8 capture.
+
 ## Status 
 - [x] Front-end
 - [x] Play Youtube
@@ -10,6 +12,7 @@ Basically a desktop application with the idea of not having to open google to li
 - [ ] Play Local Files
 - [ ] Play FM Radio
 
+# Demo
 
 
 
