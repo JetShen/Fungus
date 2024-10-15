@@ -18,3 +18,8 @@ export interface Playlist {
   name: string;
   songs: Song[];
 }
+
+
+export interface Playlists {
+  playlists: Playlist[];
+}

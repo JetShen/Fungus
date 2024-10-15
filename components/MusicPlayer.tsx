@@ -7,26 +7,33 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Shuffle, Repeat, Plus, FolderPlus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Song, Playlist } from '@/lib/utils';
+import { Song, Playlist, Playlists } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 
-
-const initialPlaylist: Song[] = [
+const initialSongs: Song[] = [
   { id: 1, title: "Song 1", artist: "Artist 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
   { id: 2, title: "Song 2", artist: "Artist 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
   { id: 3, title: "Song 3", artist: "Artist 3", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
 ];
 
-const TestinitialPlaylists: Playlist[] = [
-  { id: 1, name: "All Songs", songs: initialPlaylist },
-  { id: 2, name: "Playlist 1", songs: [initialPlaylist[0], initialPlaylist[1]] },
-  { id: 3, name: "Playlist 2", songs: [initialPlaylist[1], initialPlaylist[2]] },
-];
+const initialPlaylist: Playlist = { 
+  id: 1, 
+  name: "All Songs", 
+  songs: initialSongs 
+};
+
+const TestinitialPlaylists: Playlists = {
+  playlists: [
+    initialPlaylist,
+    { id: 2, name: "Playlist 1", songs: initialSongs.slice(0, 2) },
+    { id: 3, name: "Playlist 2", songs: initialSongs.slice(2) },
+  ]
+};
 
 export default function MusicPlayer() {
-  const [allSongs, setAllSongs] = useState<Song[]>(initialPlaylist);
-  const [playlists, setPlaylists] = useState<Playlist[]>([{ id: 1, name: "All Songs", songs: initialPlaylist }]);
-  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>(playlists[0]);
+  const [allSongs, setAllSongs] = useState<Playlist>(initialPlaylist);
+  const [playlists, setPlaylists] = useState<Playlist[]>([{ id: 1, name: "All Songs", songs: initialSongs }]);
+  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>(allSongs);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
@@ -69,19 +76,20 @@ export default function MusicPlayer() {
 
   const handleSkip = (direction: 'forward' | 'backward') => {
     if (!currentSong) return;
-    const currentIndex = allSongs.findIndex(song => song.id === currentSong.id);
+    const currentIndex = currentPlaylist.songs.findIndex(song => song.id === currentSong.id);
     let nextIndex;
 
     if (shuffle) {
-      nextIndex = Math.floor(Math.random() * allSongs.length);
+      nextIndex = Math.floor(Math.random() * currentPlaylist.songs.length);
     } else {
       nextIndex = direction === 'forward' ?
-        (currentIndex + 1) % allSongs.length :
-        (currentIndex - 1 + allSongs.length) % allSongs.length;
+        (currentIndex + 1) % currentPlaylist.songs.length :
+        (currentIndex - 1 + currentPlaylist.songs.length) % currentPlaylist.songs.length;
     }
-
-    setCurrentSong(allSongs[nextIndex]);
+    
+    setCurrentSong(currentPlaylist.songs[nextIndex]);
     setIsPlaying(true);
+    
   };
 
   const handleTimeUpdate = () => {
@@ -121,13 +129,13 @@ export default function MusicPlayer() {
     const files = event.target.files;
     if (files) {
       const newSongs: Song[] = Array.from(files).map((file, index) => ({
-        id: allSongs.length + index + 1,
+        id: allSongs.songs.length + index + 1,
         title: file.name.replace(/\.[^/.]+$/, ""),
         artist: "Unknown Artist",
         url: URL.createObjectURL(file)
       }));
 
-      setAllSongs(prevSongs => [...prevSongs, ...newSongs]);
+      setAllSongs({ ...allSongs, songs: [...allSongs.songs, ...newSongs] });
       setPlaylists(prevPlaylists =>
         prevPlaylists.map(playlist =>
           playlist.name === "All Songs"
