@@ -52,7 +52,6 @@ async function LoadMusicData(): Promise<MusicAppData> {
   const invoke = await import('@tauri-apps/api');
   const appDataDir = await import('@tauri-apps/api/path');
   const localdir = await appDataDir.documentDir();
-  console.log(localdir); 
   const jsonFilePath = `${localdir}/music-data.json`;
 
   try {
