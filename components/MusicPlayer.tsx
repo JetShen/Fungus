@@ -7,36 +7,135 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Shuffle, Repeat, Plus, FolderPlus } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Song, Playlist, Playlists } from '@/lib/utils';
+import { Song, Playlist, MusicAppData } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 
-const initialSongs: Song[] = [
-  { id: 1, title: "Song 1", artist: "Artist 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-  { id: 2, title: "Song 2", artist: "Artist 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-  { id: 3, title: "Song 3", artist: "Artist 3", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
-];
-
-const initialPlaylist: Playlist = { 
-  id: 1, 
-  name: "All Songs", 
-  songs: initialSongs 
+const FixedMusicData: MusicAppData = {
+  "songs": [
+    {
+      "id": 1,
+      "title": "Song 1",
+      "artist": "Artist 1",
+      "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
+    {
+      "id": 2,
+      "title": "Song 2",
+      "artist": "Artist 2",
+      "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    },
+    {
+      "id": 3,
+      "title": "Song 3",
+      "artist": "Artist 3",
+      "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    }
+  ],
+  "playlists": [
+    {
+      "id": 1,
+      "name": "All Songs",
+      "song_ids": [1, 2, 3],
+    }
+  ],
+  settings: {
+    last_played_song_id: 1,
+    volume: 1,
+    repeat: false,
+    shuffle: false
+  }
 };
 
-const TestinitialPlaylists: Playlists = {
-  playlists: [
-    initialPlaylist,
-    { id: 2, name: "Playlist 1", songs: initialSongs.slice(0, 2) },
-    { id: 3, name: "Playlist 2", songs: initialSongs.slice(2) },
-  ]
-};
 
-export default function MusicPlayer() {
-  const [allSongs, setAllSongs] = useState<Playlist>(initialPlaylist);
-  const [playlists, setPlaylists] = useState<Playlist[]>([{ id: 1, name: "All Songs", songs: initialSongs }]);
-  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>(allSongs);
+
+async function LoadMusicData(): Promise<MusicAppData> {
+  const invoke = await import('@tauri-apps/api');
+  const appDataDir = await import('@tauri-apps/api/path');
+  const localdir = await appDataDir.documentDir();
+  console.log(localdir); 
+  const jsonFilePath = `${localdir}/music-data.json`;
+
+  try {
+    const data = await invoke.invoke('load', { filedir: jsonFilePath });
+    console.log(data);
+    if (data) {
+      return data as MusicAppData;
+    }
+  } catch (error) {
+    console.error("Error loading music data:", error);
+  }
+
+  try {
+    await invoke.invoke('save', { filedir: jsonFilePath, data: FixedMusicData });
+  } catch (error) {
+    console.error("Error saving music data:", error);
+  }
+  
+  return FixedMusicData;
+}
+
+
+export default function MusicPlayerApp() {
+  const [musicData, setMusicData] = useState<MusicAppData | null>(null);
+  
+  useEffect(() => {
+    console.log("Loading music data...");
+
+    LoadMusicData().then(data => setMusicData(data));
+  }, []);
+
+  if (!musicData) return null;
+
+  return (
+    <MusicPlayer MusicData={musicData} />
+  );
+}
+
+
+
+/**
+ * MusicPlayer component provides a full-featured music player interface.
+ * 
+ * @param {Object} props - The component props.
+ * @param {MusicAppData} props.MusicData - The initial data for the music player, including songs, playlists, and settings.
+ * 
+ * @returns {JSX.Element} The rendered MusicPlayer component.
+ * 
+ * @component
+ * 
+ * @example
+ * const musicData = {
+ *   songs: [{ id: 1, title: 'Song 1', artist: 'Artist 1', url: 'url1' }],
+ *   playlists: [{ id: 1, name: 'Playlist 1', song_ids: [1] }],
+ *   settings: { volume: 0.5 }
+ * };
+ * 
+ * <MusicPlayer MusicData={musicData} />
+ * 
+ * @typedef {Object} MusicAppData
+ * @property {Song[]} songs - The list of songs available in the music player.
+ * @property {Playlist[]} playlists - The list of playlists available in the music player.
+ * @property {Object} settings - The settings for the music player.
+ * @property {number} settings.volume - The initial volume setting for the music player.
+ * 
+ * @typedef {Object} Song
+ * @property {number} id - The unique identifier for the song.
+ * @property {string} title - The title of the song.
+ * @property {string} artist - The artist of the song.
+ * @property {string} url - The URL of the song file.
+ * 
+ * @typedef {Object} Playlist
+ * @property {number} id - The unique identifier for the playlist.
+ * @property {string} name - The name of the playlist.
+ * @property {number[]} song_ids - The list of song IDs included in the playlist.
+ */
+function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
+  const [allSongs, setAllSongs] = useState<Song[]>(MusicData.songs);
+  const [playlists, setPlaylists] = useState<Playlist[]>(MusicData.playlists);
+  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>(MusicData.playlists[0]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(MusicData.settings.volume);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,6 +143,7 @@ export default function MusicPlayer() {
   const [repeat, setRepeat] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const { toast } = useToast();
+
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -76,21 +176,29 @@ export default function MusicPlayer() {
 
   const handleSkip = (direction: 'forward' | 'backward') => {
     if (!currentSong) return;
-    const currentIndex = currentPlaylist.songs.findIndex(song => song.id === currentSong.id);
-    let nextIndex;
+
+    const currentIndex = currentPlaylist.song_ids.findIndex(songId => songId === currentSong.id);
+    if (currentIndex === -1) return;
+
+    let nextIndex: number;
 
     if (shuffle) {
-      nextIndex = Math.floor(Math.random() * currentPlaylist.songs.length);
+      do {
+        nextIndex = Math.floor(Math.random() * currentPlaylist.song_ids.length);
+      } while (nextIndex === currentIndex && currentPlaylist.song_ids.length > 1);
     } else {
-      nextIndex = direction === 'forward' ?
-        (currentIndex + 1) % currentPlaylist.songs.length :
-        (currentIndex - 1 + currentPlaylist.songs.length) % currentPlaylist.songs.length;
+      if (direction === 'forward') {
+        nextIndex = (currentIndex + 1) % currentPlaylist.song_ids.length;
+      } else {
+        nextIndex = (currentIndex - 1 + currentPlaylist.song_ids.length) % currentPlaylist.song_ids.length;
+      }
     }
-    
-    setCurrentSong(currentPlaylist.songs[nextIndex]);
+
+    const nextSongId = currentPlaylist.song_ids[nextIndex];
+    setCurrentSong(allSongs.find(song => song.id === nextSongId) || null);
     setIsPlaying(true);
-    
   };
+
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
@@ -129,17 +237,19 @@ export default function MusicPlayer() {
     const files = event.target.files;
     if (files) {
       const newSongs: Song[] = Array.from(files).map((file, index) => ({
-        id: allSongs.songs.length + index + 1,
+        id: allSongs.length + index + 1,
         title: file.name.replace(/\.[^/.]+$/, ""),
         artist: "Unknown Artist",
         url: URL.createObjectURL(file)
       }));
 
-      setAllSongs({ ...allSongs, songs: [...allSongs.songs, ...newSongs] });
+      setAllSongs([...allSongs, ...newSongs]);
+      const newSongsIds = newSongs.map(song => song.id);
+      
       setPlaylists(prevPlaylists =>
         prevPlaylists.map(playlist =>
-          playlist.name === "All Songs"
-            ? { ...playlist, songs: [...playlist.songs, ...newSongs] }
+          playlist.name === currentPlaylist.name || playlist.name === "All Songs"
+            ? { ...playlist, songIds: [...playlist.song_ids, ...newSongsIds] }
             : playlist
         )
       );
@@ -151,7 +261,7 @@ export default function MusicPlayer() {
       const newPlaylist: Playlist = {
         id: playlists.length + 1,
         name: newPlaylistName.trim(),
-        songs: []
+        song_ids: []
       };
       setPlaylists(prevPlaylists => [...prevPlaylists, newPlaylist]);
       setNewPlaylistName('');
@@ -162,7 +272,7 @@ export default function MusicPlayer() {
     setPlaylists(prevPlaylists =>
       prevPlaylists.map(playlist =>
         playlist.id === playlistId
-          ? { ...playlist, songs: [...playlist.songs, song] }
+          ? { ...playlist, songIds: [...playlist.song_ids, song.id] }
           : playlist
       )
     );
@@ -173,7 +283,9 @@ export default function MusicPlayer() {
       });
   };
 
-  const filteredSongs = currentPlaylist.songs.filter(song =>
+  const CurrentListSongs: Song[] = currentPlaylist.song_ids.map(songId => allSongs.find(song => song.id === songId) || null).filter(Boolean) as Song[];
+
+  const filteredSongs = CurrentListSongs.filter(song =>
     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     song.artist.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -200,7 +312,6 @@ export default function MusicPlayer() {
               ref={fileInputRef}
               onChange={handleImportSongs}
               className="hidden"
-              // Use type assertion to bypass TypeScript's type checking
               {...({ webkitdirectory: "true" } as React.InputHTMLAttributes<HTMLInputElement>)}
               multiple
             />
