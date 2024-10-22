@@ -255,43 +255,61 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
   };
 
   const handleImportSongs = async () => {
-    const selectedFiles = await open({
-      multiple: true,
-      filters: [{ name: 'Music Files', extensions: ['mp3', 'wav', 'flac', 'm4a', 'webm'] }]
-    });
-
-    console.log("Selected files:", selectedFiles);
+    try {
+      const selectedFiles = await open({
+        multiple: true,
+        filters: [{ name: 'Music Files', extensions: ['mp3', 'wav', 'flac', 'm4a', 'webm'] }]
+      });
   
-    if (Array.isArray(selectedFiles)) {
+      if (!selectedFiles || !Array.isArray(selectedFiles)) {
+        return; 
+      }
+  
+      const lastSongId = Math.max(...MusicData.songs.map(song => song.id), 0);
       const newSongs = selectedFiles.map((filePath, index) => ({
-        id: MusicData.songs.length + index + 1,
+        id: lastSongId + index + 1,
         title: extractFileName(filePath),
         artist: "Unknown Artist",
         url: convertFileSrc(filePath)
       }));
-
-      newSongs.map(song => 
-        MusicData.songs.push(song)
-      );
-
-
-      const newSongsIds = newSongs.map(song => song.id);
-
-      MusicData.playlists.forEach(playlist => {
-        if (playlist.id === 1 || playlist.id === currentPlaylist.id) {
-          playlist.song_ids.push(...newSongsIds);
-        }
-      });
-      
+  
+      const updatedMusicData = {
+        ...MusicData,
+        songs: [...MusicData.songs, ...newSongs],
+        playlists: MusicData.playlists.map(playlist => {
+          if (playlist.id === 1 || playlist.id === currentPlaylist.id) {
+            return {
+              ...playlist,
+              song_ids: [...playlist.song_ids, ...newSongs.map(song => song.id)]
+            };
+          }
+          return playlist;
+        })
+      };
+  
       setPlaylists(prevPlaylists =>
         prevPlaylists.map(playlist =>
-          playlist.name === currentPlaylist.name || playlist.id === 1
-            ? { ...playlist, song_ids: [...playlist.song_ids, ...newSongsIds] }
+          (playlist.id === 1 || playlist.id === currentPlaylist.id)
+            ? { ...playlist, song_ids: [...playlist.song_ids, ...newSongs.map(song => song.id)] }
             : playlist
         )
       );
-      console.log(MusicData)
-      saveMusicData(MusicData);
+  
+      Object.assign(MusicData, updatedMusicData);
+      await saveMusicData(MusicData);
+  
+      toast({
+        title: "Songs imported",
+        description: `Successfully imported ${newSongs.length} songs`
+      });
+  
+    } catch (error) {
+      console.error("Error importing songs:", error);
+      toast({
+        title: "Import failed",
+        description: "Failed to import songs. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -310,22 +328,46 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
   };
 
   const handleAddToPlaylist = (song: Song, playlistId: number, playlistName: string) => {
-    MusicData.playlists.find(playlist => playlist.id === playlistId)?.song_ids.push(song.id);
-
+    const targetPlaylist = MusicData.playlists.find(playlist => playlist.id === playlistId);
+    
+    if (!targetPlaylist) {
+      toast({
+        title: "Error",
+        description: "Playlist not found",
+        variant: "destructive"
+      });
+      return;
+    }
+  
+    if (targetPlaylist.song_ids.includes(song.id)) {
+      toast({
+        title: "Already exists",
+        description: `${song.title} is already in ${playlistName}`,
+        variant: "destructive"
+      });
+      return;
+    }
+  
+    MusicData.playlists = MusicData.playlists.map(playlist =>
+      playlist.id === playlistId
+        ? { ...playlist, song_ids: [...playlist.song_ids, song.id] }
+        : playlist
+    );
+  
     saveMusicData(MusicData);
-
+  
     setPlaylists(prevPlaylists =>
       prevPlaylists.map(playlist =>
         playlist.id === playlistId
-          ? { ...playlist, songIds: [...playlist.song_ids, song.id] }
+          ? { ...playlist, song_ids: [...playlist.song_ids, song.id] }
           : playlist
       )
     );
-    toast(
-      {
-        title: `Song added to ${playlistName}`,
-        description: `Song ${song.title} added to  ${playlistName}`,
-      });
+  
+    toast({
+      title: `Song added to ${playlistName}`,
+      description: `${song.title} added to ${playlistName}`,
+    });
   };
 
   const CurrentListSongs: Song[] = currentPlaylist.song_ids.map(songId => MusicData.songs.find(song => song.id === songId) || null).filter(Boolean) as Song[];
