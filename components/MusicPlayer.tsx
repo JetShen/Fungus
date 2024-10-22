@@ -9,6 +9,8 @@ import { Play, Pause, SkipForward, SkipBack, Volume2, Shuffle, Repeat, Plus, Fol
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Song, Playlist, MusicAppData } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
+import { open } from '@tauri-apps/api/dialog';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 const FixedMusicData: MusicAppData = {
   "songs": [
@@ -39,6 +41,7 @@ const FixedMusicData: MusicAppData = {
     }
   ],
   settings: {
+    last_active_play_list_id: 1,
     last_played_song_id: 1,
     volume: 1,
     repeat: false,
@@ -56,7 +59,6 @@ async function LoadMusicData(): Promise<MusicAppData> {
 
   try {
     const data = await invoke.invoke('load', { filedir: jsonFilePath });
-    console.log(data);
     if (data) {
       return data as MusicAppData;
     }
@@ -72,6 +74,20 @@ async function LoadMusicData(): Promise<MusicAppData> {
   
   return FixedMusicData;
 }
+
+async function saveMusicData(data: MusicAppData) {
+  const invoke = await import('@tauri-apps/api');
+  const appDataDir = await import('@tauri-apps/api/path');
+  const localdir = await appDataDir.documentDir();
+  const jsonFilePath = `${localdir}/music-data.json`;
+
+  try {
+    await invoke.invoke('save', { filedir: jsonFilePath, data });
+  } catch (error) {
+    console.error("Error saving music data:", error);
+  }
+}
+
 
 
 export default function MusicPlayerApp() {
@@ -129,17 +145,16 @@ export default function MusicPlayerApp() {
  * @property {number[]} song_ids - The list of song IDs included in the playlist.
  */
 function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
-  const [allSongs, setAllSongs] = useState<Song[]>(MusicData.songs);
   const [playlists, setPlaylists] = useState<Playlist[]>(MusicData.playlists);
-  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>(MusicData.playlists[0]);
-  const [currentSong, setCurrentSong] = useState<Song | null>(null);
+  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist>(MusicData.playlists[MusicData.settings.last_active_play_list_id  || 0]);
+  const [currentSong, setCurrentSong] = useState<Song | null>(MusicData.songs.find(song => song.id === MusicData.settings.last_played_song_id) || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(MusicData.settings.volume);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [shuffle, setShuffle] = useState(false);
-  const [repeat, setRepeat] = useState(false);
+  const [shuffle, setShuffle] = useState(MusicData.settings.shuffle);
+  const [repeat, setRepeat] = useState(MusicData.settings.repeat);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const { toast } = useToast();
 
@@ -149,12 +164,15 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
 
   useEffect(() => {
     if (currentSong && audioRef.current) {
+
       audioRef.current.src = currentSong.url;
       if (isPlaying) {
         audioRef.current.play().catch(error => console.error("Playback failed:", error));
       }
     }
-  }, [currentSong]); 
+    MusicData.settings.last_played_song_id = currentSong?.id || 1;
+    saveMusicData(MusicData);
+  }, [currentSong]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -194,8 +212,10 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
     }
 
     const nextSongId = currentPlaylist.song_ids[nextIndex];
-    setCurrentSong(allSongs.find(song => song.id === nextSongId) || null);
+    setCurrentSong(MusicData.songs.find(song => song.id === nextSongId) || null);
+    MusicData.settings.last_played_song_id = nextSongId;
     setIsPlaying(true);
+    saveMusicData(MusicData);
   };
 
 
@@ -219,6 +239,8 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
     if (audioRef.current) {
       audioRef.current.volume = newVolume;
     }
+    MusicData.settings.volume = newVolume;
+    saveMusicData(MusicData);
   };
 
   const handleSongEnd = () => {
@@ -232,26 +254,44 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
     }
   };
 
-  const handleImportSongs = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      const newSongs: Song[] = Array.from(files).map((file, index) => ({
-        id: allSongs.length + index + 1,
-        title: file.name.replace(/\.[^/.]+$/, ""),
+  const handleImportSongs = async () => {
+    const selectedFiles = await open({
+      multiple: true,
+      filters: [{ name: 'Music Files', extensions: ['mp3', 'wav', 'flac', 'm4a', 'webm'] }]
+    });
+
+    console.log("Selected files:", selectedFiles);
+  
+    if (Array.isArray(selectedFiles)) {
+      const newSongs = selectedFiles.map((filePath, index) => ({
+        id: MusicData.songs.length + index + 1,
+        title: extractFileName(filePath),
         artist: "Unknown Artist",
-        url: URL.createObjectURL(file)
+        url: convertFileSrc(filePath)
       }));
 
-      setAllSongs([...allSongs, ...newSongs]);
+      newSongs.map(song => 
+        MusicData.songs.push(song)
+      );
+
+
       const newSongsIds = newSongs.map(song => song.id);
+
+      MusicData.playlists.forEach(playlist => {
+        if (playlist.id === 1 || playlist.id === currentPlaylist.id) {
+          playlist.song_ids.push(...newSongsIds);
+        }
+      });
       
       setPlaylists(prevPlaylists =>
         prevPlaylists.map(playlist =>
-          playlist.name === currentPlaylist.name || playlist.name === "All Songs"
-            ? { ...playlist, songIds: [...playlist.song_ids, ...newSongsIds] }
+          playlist.name === currentPlaylist.name || playlist.id === 1
+            ? { ...playlist, song_ids: [...playlist.song_ids, ...newSongsIds] }
             : playlist
         )
       );
+      console.log(MusicData)
+      saveMusicData(MusicData);
     }
   };
 
@@ -262,12 +302,18 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
         name: newPlaylistName.trim(),
         song_ids: []
       };
-      setPlaylists(prevPlaylists => [...prevPlaylists, newPlaylist]);
+      MusicData.playlists.push(newPlaylist);
+      setPlaylists([...playlists, newPlaylist]);
       setNewPlaylistName('');
+      saveMusicData(MusicData);
     }
   };
 
   const handleAddToPlaylist = (song: Song, playlistId: number, playlistName: string) => {
+    MusicData.playlists.find(playlist => playlist.id === playlistId)?.song_ids.push(song.id);
+
+    saveMusicData(MusicData);
+
     setPlaylists(prevPlaylists =>
       prevPlaylists.map(playlist =>
         playlist.id === playlistId
@@ -282,7 +328,7 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
       });
   };
 
-  const CurrentListSongs: Song[] = currentPlaylist.song_ids.map(songId => allSongs.find(song => song.id === songId) || null).filter(Boolean) as Song[];
+  const CurrentListSongs: Song[] = currentPlaylist.song_ids.map(songId => MusicData.songs.find(song => song.id === songId) || null).filter(Boolean) as Song[];
 
   const filteredSongs = CurrentListSongs.filter(song =>
     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -307,12 +353,10 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
               Import Songs
             </Button>
             <input
-              type="file"
+              type="button"
               ref={fileInputRef}
-              onChange={handleImportSongs}
+              onClick={() =>handleImportSongs()}
               className="hidden"
-              {...({ webkitdirectory: "true" } as React.InputHTMLAttributes<HTMLInputElement>)}
-              multiple
             />
             <div className="flex mb-2 items-center">
               <Input
@@ -334,7 +378,7 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
                   key={playlist.id}
                   className={`p-2 cursor-pointer hover:bg-accent hover:text-accent-foreground rounded ${currentPlaylist.id === playlist.id ? 'bg-primary text-primary-foreground' : ''
                     }`}
-                  onClick={() => setCurrentPlaylist(playlist)}
+                  onClick={() => {setCurrentPlaylist(playlist), MusicData.settings.last_active_play_list_id = playlist.id, saveMusicData(MusicData)}}
                 >
                   {playlist.name}
                 </div>
@@ -437,14 +481,14 @@ function MusicPlayer({MusicData}: {MusicData: MusicAppData}): JSX.Element {
             <Button
               variant={shuffle ? "default" : "outline"}
               size="sm"
-              onClick={() => setShuffle(!shuffle)}
+              onClick={() => { MusicData.settings.shuffle = !shuffle, setShuffle(!shuffle), saveMusicData(MusicData)} }
             >
               <Shuffle className="h-4 w-4" />
             </Button>
             <Button
               variant={repeat ? "default" : "outline"}
               size="sm"
-              onClick={() => setRepeat(!repeat)}
+              onClick={() =>  { MusicData.settings.repeat = !repeat, setRepeat(!repeat), saveMusicData(MusicData)} }
             >
               <Repeat className="h-4 w-4" />
             </Button>
@@ -475,4 +519,8 @@ function formatTime(time: number): string {
   const minutes = Math.floor(time / 60);
   const seconds = Math.floor(time % 60);
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function extractFileName(filePath: string): string {
+  return filePath.split(/[/\\]/).pop()?.replace(/\.[^/.]+$/, "") ?? 'Unknown Title';
 }
