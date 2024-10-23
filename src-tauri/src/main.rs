@@ -35,6 +35,7 @@ struct MusicAppData {
     settings: Settings,
 }
 
+
 #[tauri::command]
 fn load(filedir: String) -> Result<MusicAppData, String> {
     if let Ok(data) = std::fs::read_to_string(filedir) {
@@ -52,9 +53,30 @@ fn save(filedir: String, data: MusicAppData) -> Result<(), String> {
     Ok(())
 }
 
+//custom command to get m3u8 file using yt-dlp 'yt-dlp -g -f "bestaudio" --no-playlist <URL_DEL_VIDEO>'
+#[tauri::command]
+fn getm3u8(url: String) -> Result<String, String> {
+    // Ejecutar en un hilo separado para evitar bloqueos en el hilo principal
+    std::thread::spawn(move || {
+        let output = std::process::Command::new("yt-dlp")
+            .arg("-g")
+            .arg("-f")
+            .arg("bestaudio")
+            .arg("--no-playlist")
+            .arg(url)
+            .output()
+            .map_err(|e| e.to_string());
+
+        match output {
+            Ok(out) => Ok(String::from_utf8(out.stdout).unwrap()),
+            Err(e) => Err(e),
+        }
+    }).join().unwrap_or_else(|_| Err("Thread panicked".to_string()))
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![load, save])
+        .invoke_handler(tauri::generate_handler![load, save, getm3u8])
         .run(tauri::generate_context!())
         .expect("error while running Tauri application");
 }
