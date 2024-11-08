@@ -12,6 +12,8 @@ import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { useToast } from '@/components/ui/use-toast';
 import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { List } from '@/components/YouTube/List';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const [musicData, setMusicData] = useState<MusicAppData | null>(null);
@@ -37,14 +39,14 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
   const [repeat, setRepeat] = useState(MusicData.settings.repeat);
   const { currentSong, audioRef, isPlaying, currentTime, duration, handleTimeUpdate, handlePlayPause, setAudioSource, setIsPlaying } = useAudioPlayer(MusicData.songs.find(song => song.id === MusicData.settings.last_played_song_id) || MusicData.songs[0]);
   const [volume, setVolume] = useState(MusicData.settings.volume);
+  const [switcher, setSwitcher] = useState(1);
   const { toast } = useToast();
 
   const handlePlaylistSelect = (playlist: Playlist) => {
+    if (switcher !== 1) {
+      setSwitcher(1);
+    }
     setCurrentPlaylist(playlist);
-    toast({
-      title: `Playlist "${playlist.name}" selected`,
-      description: `Playing ${playlist.song_ids.length} songs`,
-    });
   };
 
   const handleImportSongs = async () => {
@@ -171,6 +173,8 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
       });
       return;
     }
+    
+
 
     if (targetPlaylist.song_ids.includes(song.id)) {
       toast({
@@ -195,6 +199,65 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
     });
   };
 
+  const handleAddSong = (song: Song,  playlistId: number) => {
+    const targetPlaylist = MusicData.playlists.find(playlist => playlist.id === playlistId);
+    if (!targetPlaylist) {
+      toast({
+        title: "Error",
+        description: "Playlist not found",
+        variant: "destructive"
+      });
+      return;
+    }
+    const lastId = Math.max(...MusicData.songs.map(song => song.id), 0);
+    const newSong = {
+      id: lastId + 1,
+      title: extractFileName(song.title),
+      artist: song.artist,
+      url: `https://www.youtube.com/watch?v=${extractUrlId(song.url)}`
+    }
+
+    MusicData.songs.push(newSong);
+
+    MusicData.playlists = MusicData.playlists.map(playlist =>
+      playlist.id === targetPlaylist.id || playlist.id === 1
+        ? { ...playlist, song_ids: [...playlist.song_ids, newSong.id] }
+        : playlist
+    );
+
+    saveMusicData(MusicData);
+
+    toast({
+      title: `Song added to ${targetPlaylist.name}`,
+      description: `${song.title} added to ${targetPlaylist.name}`,
+    });
+  }
+
+  const SwitchWindow = (id: number) => {
+    switch (id) {
+      case 1:
+        return <SongList
+          songs={MusicData.songs.filter(song => currentPlaylist.song_ids.includes(song.id))}
+          currentSong={currentSong}
+          onSongSelect={setAudioSource}
+          onAddToPlaylist={handleAddToPlaylist}
+          playlists={MusicData.playlists}
+        />;
+      case 2:
+        return <List
+          songs={MusicData.songs.filter(song => currentPlaylist.song_ids.includes(song.id))}
+          currentSong={currentSong}
+          playlists={MusicData.playlists}
+          onSongSelect={setAudioSource}
+          onAddToPlaylist={handleAddSong}
+        />;
+      case 3:
+        return <>3</>;
+      default:
+        return null;
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       <div className="flex flex-1 overflow-hidden">
@@ -205,13 +268,17 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
           onImportSongs={handleImportSongs}
           onCreatePlaylist={handleCreatePlaylist}
         />
-        <SongList
-          songs={MusicData.songs.filter(song => currentPlaylist.song_ids.includes(song.id))}
-          currentSong={currentSong}
-          onSongSelect={setAudioSource}
-          onAddToPlaylist={handleAddToPlaylist}
-          playlists={MusicData.playlists}
-        />
+        <div className="w-full">
+          <div className="flex flex-row justify-evenly pt-1 m-0">
+            <Button onClick={() => setSwitcher(1)}>Songs</Button>
+            <Button onClick={() => setSwitcher(2)}>Youtube</Button>
+            <Button onClick={() => setSwitcher(3)}>SoundCloud</Button>
+          </div>
+          {
+            SwitchWindow(switcher)
+          }
+        </div>
+        
       </div>
       <PlayerControls
           currentSong={currentSong}
@@ -235,4 +302,8 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
 
 function extractFileName(filePath: string): string {
   return filePath.split(/[/\\]/).pop()?.replace(/\.[^/.]+$/, "") ?? 'Unknown Title';
+}
+
+function extractUrlId(url: string): string {
+  return url.split('be/')[1];
 }

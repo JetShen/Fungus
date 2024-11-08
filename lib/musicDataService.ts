@@ -20,19 +20,13 @@ const FixedMusicData: MusicAppData = {
             "title": "Song 3",
             "artist": "Artist 3",
             "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-        },
-        {
-            "id": 4,
-            "title": "Disconnected",
-            "artist": "Artist 4",
-            "url": "https://www.youtube.com/watch?v=MwSkC85TDgY"
         }
     ],
     "playlists": [
         {
             "id": 1,
             "name": "All Songs",
-            "song_ids": [1, 2, 3, 4],
+            "song_ids": [1, 2, 3],
         }
     ],
     settings: {

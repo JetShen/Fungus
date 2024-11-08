@@ -3,6 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::process::Command;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Song {
@@ -56,22 +57,17 @@ fn save(filedir: String, data: MusicAppData) -> Result<(), String> {
 //custom command to get m3u8 file using yt-dlp 'yt-dlp -g -f "bestaudio" --no-playlist <URL_DEL_VIDEO>'
 #[tauri::command]
 fn getm3u8(url: String) -> Result<String, String> {
-    // Ejecutar en un hilo separado para evitar bloqueos en el hilo principal
-    std::thread::spawn(move || {
-        let output = std::process::Command::new("yt-dlp")
-            .arg("-g")
-            .arg("-f")
-            .arg("bestaudio")
-            .arg("--no-playlist")
-            .arg(url)
-            .output()
-            .map_err(|e| e.to_string());
+    let output = Command::new("yt-dlp")
+        .arg("-g")
+        .arg("-f")
+        .arg("bestaudio")
+        .arg("--no-playlist")
+        .arg(url)
+        .output()
+        .expect("failed to execute process");
 
-        match output {
-            Ok(out) => Ok(String::from_utf8(out.stdout).unwrap()),
-            Err(e) => Err(e),
-        }
-    }).join().unwrap_or_else(|_| Err("Thread panicked".to_string()))
+    let url = String::from_utf8(output.stdout).unwrap();
+    Ok(url)
 }
 
 fn main() {

@@ -28,7 +28,11 @@
       },
       "path": {
         "all": true
+      },
+      "http": {
+        "all": true
       }
+
     },
     "bundle": {
       "active": true,
@@ -69,6 +73,7 @@
     "updater": {
       "active": false
     },
+
     "windows": [
       {
         "fullscreen": false,
@@ -76,6 +81,7 @@
         "resizable": true,
         "title": "fungus",
         "width": 800
+
       }
     ]
   }
