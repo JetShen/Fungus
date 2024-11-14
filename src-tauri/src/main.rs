@@ -70,9 +70,24 @@ fn getm3u8(url: String) -> Result<String, String> {
     Ok(url)
 }
 
+//command to get the link of the best audio quality of a soundcloud song
+#[tauri::command]
+fn getsoundcloud(url: String) -> Result<String, String> {
+    let output = Command::new("yt-dlp")
+        .arg("-f")
+        .arg("mp3")
+        .arg("-g")
+        .arg(url)
+        .output()
+        .expect("failed to execute process");
+
+    let url = String::from_utf8(output.stdout).unwrap();
+    Ok(url)
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![load, save, getm3u8])
+        .invoke_handler(tauri::generate_handler![load, save, getm3u8, getsoundcloud])
         .run(tauri::generate_context!())
         .expect("error while running Tauri application");
 }

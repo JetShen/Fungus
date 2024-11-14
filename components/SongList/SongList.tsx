@@ -38,8 +38,7 @@ export const SongList: FC<SongListProps> = ({
           className="mb-4"
         />
       </div>
-      <ScrollArea className="flex-1">
-        <div className="p-4 pt-0">
+      <ScrollArea className="flex-1 h-full">
           {filteredSongs.map((song) => (
             <SongItem
               key={song.id}
@@ -50,7 +49,6 @@ export const SongList: FC<SongListProps> = ({
               onAddToPlaylist={(song: Song, playlistId: number) => onAddToPlaylist(song, playlistId)}
             />
           ))}
-        </div>
       </ScrollArea>
     </div>
   );

@@ -14,6 +14,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { List } from '@/components/YouTube/List';
 import { Button } from '@/components/ui/button';
+import { SoundCloud } from '@/components/SoundCloud/soundcloud';
 
 export default function Home() {
   const [musicData, setMusicData] = useState<MusicAppData | null>(null);
@@ -252,7 +253,13 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
           onAddToPlaylist={handleAddSong}
         />;
       case 3:
-        return <>3</>;
+        return <SoundCloud 
+          songs={MusicData.songs.filter(song => currentPlaylist.song_ids.includes(song.id))}
+          currentSong={currentSong}
+          playlists={MusicData.playlists}
+          onSongSelect={setAudioSource}
+          onAddToPlaylist={handleAddSong}
+        />;
       default:
         return null;
     }
@@ -268,11 +275,11 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
           onImportSongs={handleImportSongs}
           onCreatePlaylist={handleCreatePlaylist}
         />
-        <div className="w-full">
-          <div className="flex flex-row justify-evenly pt-1 m-0">
-            <Button onClick={() => setSwitcher(1)}>Songs</Button>
-            <Button onClick={() => setSwitcher(2)}>Youtube</Button>
-            <Button onClick={() => setSwitcher(3)}>SoundCloud</Button>
+        <div className='flex flex-col flex-1 overflow-hidden w-full'>
+          <div className="flex flex-row justify-center  pl-2 pt-1 m-0 ">
+            <Button variant={switcher == 1 ? 'selectedRectangle' : 'rectangle'} fullWidth onClick={() => setSwitcher(1)}>Songs</Button>
+            <Button variant={switcher == 2 ? 'selectedRectangle' : 'rectangle'} fullWidth onClick={() => setSwitcher(2)}>Youtube</Button>
+            <Button variant={switcher == 3 ? 'selectedRectangle' : 'rectangle'} fullWidth onClick={() => setSwitcher(3)}>SoundCloud</Button>
           </div>
           {
             SwitchWindow(switcher)

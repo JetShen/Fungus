@@ -64,14 +64,21 @@ export function useAudioPlayer(initialSong: Song) {
 
         const invoke = await import('@tauri-apps/api').then((api) => api.invoke);
         try {
-            if (isYouTubeUrl(song.url)) {
+            const sourceType = getSourceType(song.url);
+            if (sourceType === 'youtube') {
                 const urlM3U8: string = await invoke('getm3u8', { url: song.url });
                 if (urlM3U8) {
                     audioRef.current.src = urlM3U8;
                 }
+            } else if (sourceType === 'soundcloud') {
+                const urlSC: string = await invoke('getsoundcloud', { url: song.url });
+                if (urlSC) {
+                    audioRef.current.src = urlSC;
+                }
             } else {
                 audioRef.current.src = song.url;
             }
+
 
             // Reset state for new song
             setCurrentTime(0);
@@ -104,4 +111,10 @@ export function useAudioPlayer(initialSong: Song) {
     };
 }
 
-const isYouTubeUrl = (url: string) => url.includes('youtube');
+type SourceType = 'local' | 'youtube' | 'soundcloud';
+
+const getSourceType = (url: string): SourceType => {
+    if (url.includes('youtube')) return 'youtube';
+    if (url.includes('soundcloud')) return 'soundcloud';
+    return 'local';
+};

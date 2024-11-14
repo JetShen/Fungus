@@ -46,7 +46,7 @@ export const PlaylistSection: FC<PlaylistSectionProps> = ({
         <div className="flex mb-2 items-center">
           <Input
             type="text"
-            placeholder="New playlist name"
+            placeholder="New playlist"
             value={newPlaylistName}
             onChange={(e) => setNewPlaylistName(e.target.value)}
             className="mr-2"

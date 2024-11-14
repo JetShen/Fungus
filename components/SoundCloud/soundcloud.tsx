@@ -23,7 +23,7 @@ interface SongYT {
 }
 
 
-export const List: FC<SongListProps> = ({
+export const SoundCloud: FC<SongListProps> = ({
   songs,
   currentSong,
   playlists,
@@ -31,24 +31,23 @@ export const List: FC<SongListProps> = ({
   onAddToPlaylist,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [VideoResults, setVideoResults] = useState<Song[]>([]);
+  const [SongsResults, setSongsResults] = useState<Song[]>([]);
 
   async function searchVideos(query: string) {
-    const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+    const response = await fetch(`/api/soundcloud?query=${encodeURIComponent(query)}`);
+    console.log(response);
     const data = await response.json();
-
     if (data.error) {
-      setVideoResults([]);
-      return;
+        setSongsResults([]);
+        return;
     }
-
-    const videos = data.Videos.map((video: any, index:number) => ({
-      id: 1,
-      title: video.title,
-      artist: video.channel.name,
-      url: video.link
+    const songs = data.Songs.map((song: any, index:number) => ({
+        id: 1,
+        title: song.title,
+        artist: song.artist,
+        url: song.url
     }));
-    setVideoResults(videos);
+    setSongsResults(songs);
   }
 
   return (
@@ -67,7 +66,7 @@ export const List: FC<SongListProps> = ({
       </div>
       <ScrollArea className="flex-1">
         <div className="p-4 pt-0">
-          {VideoResults.map((song) => (
+          {SongsResults.map((song) => (
             <SongItem
               key={song.url}
               song={song}
