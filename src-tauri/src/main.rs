@@ -23,7 +23,8 @@ struct Playlist {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Settings {
-    last_played_song_id: u32,
+    playlistid: u32,
+    songid: u32,
     volume: f32,
     repeat: bool,
     shuffle: bool,

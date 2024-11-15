@@ -13,8 +13,8 @@ export interface Playlist {
 }
 
 export interface MusicAppSettings {
-    last_active_play_list_id: number;
-    last_played_song_id: number;
+    playlistid: number;
+    songid: number;
     volume: number;
     repeat: boolean;
     shuffle: boolean;

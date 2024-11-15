@@ -2,7 +2,7 @@
 "use client"
 
 import { Toaster } from '@/components/ui/toaster';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { loadMusicData, saveMusicData } from '@/lib/musicDataService';
 import { MusicAppData, Playlist, Song } from '@/types/MusicTypes';
 import { PlaylistSection } from '@/components/Sidebar/PlaylistSection';
@@ -38,7 +38,7 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
   const [isImporting, setIsImporting] = useState(false);
   const [shuffle, setShuffle] = useState(MusicData.settings.shuffle);
   const [repeat, setRepeat] = useState(MusicData.settings.repeat);
-  const { currentSong, audioRef, isPlaying, currentTime, duration, handleTimeUpdate, handlePlayPause, setAudioSource, setIsPlaying } = useAudioPlayer(MusicData.songs.find(song => song.id === MusicData.settings.last_played_song_id) || MusicData.songs[0]);
+  const { currentSong, audioRef, isPlaying, currentTime, duration, handleTimeUpdate, handlePlayPause, setAudioSource, handleSkip, handleSongEnd } = useAudioPlayer(MusicData.songs.find(song => song.id === MusicData.settings.songid) || MusicData.songs[0]);
   const [volume, setVolume] = useState(MusicData.settings.volume);
   const [switcher, setSwitcher] = useState(1);
   const { toast } = useToast();
@@ -49,6 +49,17 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
     }
     setCurrentPlaylist(playlist);
   };
+
+  useEffect(() => {
+    MusicData.settings.playlistid = currentPlaylist.id;
+    localStorage.setItem('data', JSON.stringify(MusicData));
+  }, [currentPlaylist]);
+
+  useEffect(() => {
+    localStorage.setItem('data', JSON.stringify(MusicData));
+  }
+  , [MusicData]);
+
 
   const handleImportSongs = async () => {
     const result = await open({
@@ -111,57 +122,18 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
     });
   };
 
-  const handleSkip = (direction: 'forward' | 'backward') => {
-    if (!audioRef.current) return;
-    if (!currentSong) return;
-
-    const currentIndex = currentPlaylist.song_ids.findIndex(songId => songId === currentSong.id);
-    if (currentIndex === -1) return;
-
-    let nextIndex: number;
-
-    if (shuffle) {
-      do {
-        nextIndex = Math.floor(Math.random() * currentPlaylist.song_ids.length);
-      } while (nextIndex === currentIndex && currentPlaylist.song_ids.length > 1);
-    } else {
-      if (direction === 'forward') {
-        nextIndex = (currentIndex + 1) % currentPlaylist.song_ids.length;
-      } else {
-        nextIndex = (currentIndex - 1 + currentPlaylist.song_ids.length) % currentPlaylist.song_ids.length;
-      }
-    }
-
-    const nextSongId = currentPlaylist.song_ids[nextIndex];
-    const proximaCancion = MusicData.songs.find(song => song.id === nextSongId);
-    if (!proximaCancion) return;
-    setAudioSource(proximaCancion);
-    MusicData.settings.last_played_song_id = nextSongId;
-    setIsPlaying(true);
-    saveMusicData(MusicData);
-  };
 
 
   const handleVolumeChange = (newValue: number[]) => {
-    const newVolume = newValue[0];
-    setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-    MusicData.settings.volume = newVolume;
-    saveMusicData(MusicData);
-  };
-
-  const handleSongEnd = () => {
-    if (repeat) {
+      const newVolume = newValue[0];
+      setVolume(newVolume);
       if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(error => console.error("Playback failed:", error));
+        audioRef.current.volume = newVolume;
       }
-    } else {
-      handleSkip('forward');
-    }
-  };
+      MusicData.settings.volume = newVolume;
+      saveMusicData(MusicData);
+      localStorage.setItem('data', JSON.stringify(MusicData));
+    };
 
   const handleAddToPlaylist = (song: Song, playlistId: number) => {
     const targetPlaylist = MusicData.playlists.find(playlist => playlist.id === playlistId);
@@ -215,7 +187,7 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
       id: lastId + 1,
       title: extractFileName(song.title),
       artist: song.artist,
-      url: `https://www.youtube.com/watch?v=${extractUrlId(song.url)}`
+      url: song.url
     }
 
     MusicData.songs.push(newSong);
@@ -265,6 +237,19 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
     }
   }
 
+  const loopSong = (type: string) => {
+    if (type == 'shuffle') {
+      setShuffle(prev => !prev)
+      MusicData.settings.shuffle = !shuffle;
+    } else {
+      setRepeat(prev => !prev)
+      MusicData.settings.repeat = !repeat;
+    }
+    saveMusicData(MusicData);
+    localStorage.setItem('data', JSON.stringify(MusicData));
+  }
+
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground">
       <div className="flex flex-1 overflow-hidden">
@@ -299,8 +284,8 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
           onSkip={handleSkip}
           onSeek={handleTimeUpdate}
           onVolumeChange={handleVolumeChange}
-          onShuffleToggle={() => setShuffle(prev => !prev)}
-          onRepeatToggle={() => setRepeat(prev => !prev)}
+          onShuffleToggle={() => loopSong('shuffle')}
+          onRepeatToggle={() => loopSong('repeat')}
           onSongEnd={handleSongEnd}
         />
     </div>
@@ -311,6 +296,3 @@ function extractFileName(filePath: string): string {
   return filePath.split(/[/\\]/).pop()?.replace(/\.[^/.]+$/, "") ?? 'Unknown Title';
 }
 
-function extractUrlId(url: string): string {
-  return url.split('be/')[1];
-}

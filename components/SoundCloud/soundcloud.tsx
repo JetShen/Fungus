@@ -35,7 +35,6 @@ export const SoundCloud: FC<SongListProps> = ({
 
   async function searchVideos(query: string) {
     const response = await fetch(`/api/soundcloud?query=${encodeURIComponent(query)}`);
-    console.log(response);
     const data = await response.json();
     if (data.error) {
         setSongsResults([]);

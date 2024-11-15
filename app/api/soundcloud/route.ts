@@ -10,7 +10,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const query = request.nextUrl.searchParams.get('query');
 
     if (!query) {
-      console.log("Error: Missing query parameter.");
       return NextResponse.json({ error: 'Missing Query!' }, { status: 400 });
     }
 
@@ -25,8 +24,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const url = `https://soundcloud.com/search/sounds?q=${query}`;
       await page.goto(url, { waitUntil: 'networkidle' });
       
-      console.log("Página cargada exitosamente.");
-
       await page.waitForSelector('.searchItem', { timeout: 10000 });
 
       const songs: Song[] = await page.evaluate(() => {
@@ -42,7 +39,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           const title = titleElement?.textContent?.trim() || '';
           const fullLink = link ? `https://soundcloud.com${link}` : '';
 
-          console.log(`Processing song: ${title} by ${artist}`);
 
           return {
             id: index,
@@ -54,11 +50,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       });
 
       if (songs.length === 0) {
-        console.log("No songs found after processing.");
         return NextResponse.json({ error: 'No Videos Found!' }, { status: 404 });
       }
 
-      console.log("Songs successfully scraped:", songs);
       return NextResponse.json({ Songs: songs }, { status: 200 });
 
     } finally {

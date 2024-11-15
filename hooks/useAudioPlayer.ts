@@ -1,6 +1,6 @@
-// Path: hooks/useAudioPlayer.ts
 import { useRef, useState, useEffect } from 'react';
-import { Song } from '@/types/MusicTypes';
+import { MusicAppData, Playlist, Song } from '@/types/MusicTypes';
+import { saveMusicData } from '@/lib/musicDataService';
 
 export function useAudioPlayer(initialSong: Song) {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -8,6 +8,18 @@ export function useAudioPlayer(initialSong: Song) {
     const [duration, setDuration] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [currentSong, setCurrentSong] = useState<Song>(initialSong);
+    
+    // Create a ref to hold the latest song data to avoid stale closures
+    const currentSongRef = useRef<Song>(initialSong);
+
+    useEffect(() => {
+        currentSongRef.current = currentSong;
+    }, [currentSong]);
+
+    const getData = (): MusicAppData => {
+        const data = localStorage.getItem('data');
+        return data ? JSON.parse(data) : {} as MusicAppData;
+    };
 
     // Create audio element when hook is first used
     useEffect(() => {
@@ -21,6 +33,7 @@ export function useAudioPlayer(initialSong: Song) {
             });
             audio.addEventListener('ended', () => {
                 setIsPlaying(false);
+                handleSongEnd();
             });
             audioRef.current = audio;
         }
@@ -36,6 +49,62 @@ export function useAudioPlayer(initialSong: Song) {
             }
         };
     }, []);
+
+    const handleSkip = (direction: 'forward' | 'backward') => {
+        const MusicData = getData();
+        if (!audioRef.current || !currentSongRef.current) return;
+        
+        const currentPlaylist = MusicData.playlists.find(
+            (playlist: Playlist) => playlist.id === MusicData.settings.playlistid
+        );
+        
+        if (!currentPlaylist) return;
+        
+        const currentIndex = currentPlaylist.song_ids.findIndex(
+            songId => songId === currentSongRef.current.id
+        );
+        
+        if (currentIndex === -1) return;
+        
+        let nextIndex: number;
+        
+        if (MusicData.settings.shuffle) {
+            do {
+                nextIndex = Math.floor(Math.random() * currentPlaylist.song_ids.length);
+            } while (nextIndex === currentIndex && currentPlaylist.song_ids.length > 1);
+        } else {
+            if (direction === 'forward') {
+                nextIndex = (currentIndex + 1) % currentPlaylist.song_ids.length;
+            } else {
+                nextIndex = (currentIndex - 1 + currentPlaylist.song_ids.length) % currentPlaylist.song_ids.length;
+            }
+        }
+        
+        const nextSongId = currentPlaylist.song_ids[nextIndex];
+        const nextSong = MusicData.songs.find(song => song.id === nextSongId);
+        
+        if (!nextSong) return;
+        
+        MusicData.settings.songid = nextSongId;
+        localStorage.setItem('data', JSON.stringify(MusicData));
+        saveMusicData(MusicData);
+        setAudioSource(nextSong);
+        setIsPlaying(true);
+    };
+    
+    const handleSongEnd = () => {
+        const MusicData = getData();
+        if (MusicData.settings.repeat) {
+            if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play()
+                    .then(() => setIsPlaying(true))
+                    .catch(error => console.error("Playback failed:", error));
+            }
+        } else {
+            handleSkip('forward');
+        }
+    };
 
     const handleTimeUpdate = (newTime: number[]) => {
         if (audioRef.current && newTime[0] !== undefined) {
@@ -58,8 +127,6 @@ export function useAudioPlayer(initialSong: Song) {
     };
 
     const setAudioSource = async (song: Song) => {
-        console.log("Setting audio source:", song);
-        
         if (!audioRef.current) return;
 
         const invoke = await import('@tauri-apps/api').then((api) => api.invoke);
@@ -78,7 +145,6 @@ export function useAudioPlayer(initialSong: Song) {
             } else {
                 audioRef.current.src = song.url;
             }
-
 
             // Reset state for new song
             setCurrentTime(0);
@@ -107,7 +173,9 @@ export function useAudioPlayer(initialSong: Song) {
         handleTimeUpdate,
         handlePlayPause,
         setAudioSource,
-        setIsPlaying
+        setIsPlaying,
+        handleSkip,
+        handleSongEnd
     };
 }
 

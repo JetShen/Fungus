@@ -19,12 +19,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         if (!videos || videos.length === 0) {
             return NextResponse.json({ error: 'No Videos Found!' }, { status: 404 });
         }
-
-
-        // Return the data
+        // Map the videos to a more readable format, transform url 'youtu.be/{id}' to `youtube.com/watch?v={id}`
+        videos.forEach((video:any) => {
+            video.link = `https://youtube.com/watch?v=${extractUrlId(video.link)}`;
+        });
         return NextResponse.json({ Videos: videos }, { status: 200 });
     } catch (error:any) {
         console.error(error);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
+}
+
+function extractUrlId(url: string): string {
+    return url.split('be/')[1];
 }

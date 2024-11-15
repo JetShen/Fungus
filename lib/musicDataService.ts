@@ -31,13 +31,13 @@ const FixedMusicData: MusicAppData = {
     "playlists": [
         {
             "id": 1,
-            "name": "All Songs",
+            "name": "Songs",
             "song_ids": [1, 2, 3, 4],
         }
     ],
     settings: {
-        last_active_play_list_id: 1,
-        last_played_song_id: 1,
+        playlistid: 1,
+        songid: 1,
         volume: 1,
         repeat: false,
         shuffle: false
