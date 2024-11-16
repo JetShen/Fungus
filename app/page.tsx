@@ -50,15 +50,15 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
     setCurrentPlaylist(playlist);
   };
 
-  useEffect(() => {
+  useEffect(() => { // Save last state of the app
     MusicData.settings.playlistid = currentPlaylist.id;
+    MusicData.settings.songid = currentSong.id;
+    MusicData.settings.volume = volume;
+    MusicData.settings.shuffle = shuffle;
+    MusicData.settings.repeat = repeat;
     localStorage.setItem('data', JSON.stringify(MusicData));
-  }, [currentPlaylist]);
-
-  useEffect(() => {
-    localStorage.setItem('data', JSON.stringify(MusicData));
-  }
-  , [MusicData]);
+    saveMusicData(MusicData);
+  }, [currentPlaylist, currentSong, volume, shuffle, repeat, MusicData]);
 
 
   const handleImportSongs = async () => {
@@ -95,7 +95,6 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
     };
     setMusicData(updatedMusicData);
     Object.assign(MusicData, updatedMusicData);
-    await saveMusicData(updatedMusicData);
     setIsImporting(false);
     toast({
       title: "Songs imported",
@@ -115,7 +114,6 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
       playlists: [...MusicData.playlists, newPlaylist]
     };
     setMusicData(updatedData);
-    saveMusicData(updatedData);
     toast({
       title: "Playlist created",
       description: `New playlist "${name}" created`,
@@ -130,9 +128,6 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
       if (audioRef.current) {
         audioRef.current.volume = newVolume;
       }
-      MusicData.settings.volume = newVolume;
-      saveMusicData(MusicData);
-      localStorage.setItem('data', JSON.stringify(MusicData));
     };
 
   const handleAddToPlaylist = (song: Song, playlistId: number) => {
@@ -164,7 +159,6 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
         : playlist
     );
 
-    saveMusicData(MusicData);
 
     toast({
       title: `Song added to ${targetPlaylist.name}`,
@@ -198,7 +192,6 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
         : playlist
     );
 
-    saveMusicData(MusicData);
 
     toast({
       title: `Song added to ${targetPlaylist.name}`,
@@ -245,8 +238,6 @@ function MusicPlayer({ MusicData, setMusicData }: { MusicData: MusicAppData, set
       setRepeat(prev => !prev)
       MusicData.settings.repeat = !repeat;
     }
-    saveMusicData(MusicData);
-    localStorage.setItem('data', JSON.stringify(MusicData));
   }
 
 

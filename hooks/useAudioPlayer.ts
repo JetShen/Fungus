@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 import { MusicAppData, Playlist, Song } from '@/types/MusicTypes';
-import { saveMusicData } from '@/lib/musicDataService';
 
 export function useAudioPlayer(initialSong: Song) {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -8,9 +7,8 @@ export function useAudioPlayer(initialSong: Song) {
     const [duration, setDuration] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [currentSong, setCurrentSong] = useState<Song>(initialSong);
-    
-    // Create a ref to hold the latest song data to avoid stale closures
     const currentSongRef = useRef<Song>(initialSong);
+    const isTransitioning = useRef(false);
 
     useEffect(() => {
         currentSongRef.current = currentSong;
@@ -21,27 +19,40 @@ export function useAudioPlayer(initialSong: Song) {
         return data ? JSON.parse(data) : {} as MusicAppData;
     };
 
-    // Create audio element when hook is first used
+    const setupAudioListeners = (audio: HTMLAudioElement) => {
+        audio.addEventListener('timeupdate', () => {
+            setCurrentTime(audio.currentTime);
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            setDuration(audio.duration);
+        });
+
+        audio.addEventListener('ended', async () => {
+            if (!isTransitioning.current) {
+                isTransitioning.current = true;
+                await handleSongEnd();
+                isTransitioning.current = false;
+            }
+        });
+
+        audio.addEventListener('play', () => {
+            setIsPlaying(true);
+        });
+
+        audio.addEventListener('pause', () => {
+            setIsPlaying(false);
+        });
+    };
+
     useEffect(() => {
         if (!audioRef.current) {
             const audio = new Audio();
-            audio.addEventListener('timeupdate', () => {
-                setCurrentTime(audio.currentTime);
-            });
-            audio.addEventListener('loadedmetadata', () => {
-                setDuration(audio.duration);
-            });
-            audio.addEventListener('ended', () => {
-                setIsPlaying(false);
-                handleSongEnd();
-            });
+            setupAudioListeners(audio);
             audioRef.current = audio;
+            setAudioSource(initialSong);
         }
 
-        // Set initial song
-        setAudioSource(initialSong);
-
-        // Cleanup
         return () => {
             if (audioRef.current) {
                 audioRef.current.pause();
@@ -50,7 +61,7 @@ export function useAudioPlayer(initialSong: Song) {
         };
     }, []);
 
-    const handleSkip = (direction: 'forward' | 'backward') => {
+    const handleSkip = async (direction: 'forward' | 'backward') => {
         const MusicData = getData();
         if (!audioRef.current || !currentSongRef.current) return;
         
@@ -83,26 +94,24 @@ export function useAudioPlayer(initialSong: Song) {
         const nextSongId = currentPlaylist.song_ids[nextIndex];
         const nextSong = MusicData.songs.find(song => song.id === nextSongId);
         
-        if (!nextSong) return;
-        
-        MusicData.settings.songid = nextSongId;
-        localStorage.setItem('data', JSON.stringify(MusicData));
-        saveMusicData(MusicData);
-        setAudioSource(nextSong);
-        setIsPlaying(true);
+        if (nextSong) {
+            MusicData.settings.songid = nextSongId;
+            localStorage.setItem('data', JSON.stringify(MusicData));
+            await setAudioSource(nextSong, true);
+        }
     };
     
-    const handleSongEnd = () => {
+    const handleSongEnd = async () => {
         const MusicData = getData();
-        if (MusicData.settings.repeat) {
-            if (audioRef.current) {
-                audioRef.current.currentTime = 0;
-                audioRef.current.play()
-                    .then(() => setIsPlaying(true))
-                    .catch(error => console.error("Playback failed:", error));
+        if (MusicData.settings.repeat && audioRef.current) {
+            audioRef.current.currentTime = 0;
+            try {
+                await audioRef.current.play();
+            } catch (error) {
+                console.error("Repeat playback failed:", error);
             }
         } else {
-            handleSkip('forward');
+            await handleSkip('forward');
         }
     };
 
@@ -113,50 +122,52 @@ export function useAudioPlayer(initialSong: Song) {
         }
     };
 
-    const handlePlayPause = () => {
+    const handlePlayPause = async () => {
         if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play().catch(error => {
-                    console.error("Playback failed:", error);
-                });
+            try {
+                if (isPlaying) {
+                    audioRef.current.pause();
+                } else {
+                    await audioRef.current.play();
+                }
+            } catch (error) {
+                console.error("Playback control failed:", error);
             }
-            setIsPlaying(!isPlaying);
         }
     };
 
-    const setAudioSource = async (song: Song) => {
+    const setAudioSource = async (song: Song, autoplay = false) => {
         if (!audioRef.current) return;
-
-        const invoke = await import('@tauri-apps/api').then((api) => api.invoke);
+        
+        const MusicData = getData();
+        audioRef.current.volume = MusicData.settings.volume;
+        
         try {
+            const invoke = await import('@tauri-apps/api').then((api) => api.invoke);
             const sourceType = getSourceType(song.url);
+            let sourceUrl = '';
+
             if (sourceType === 'youtube') {
-                const urlM3U8: string = await invoke('getm3u8', { url: song.url });
-                if (urlM3U8) {
-                    audioRef.current.src = urlM3U8;
-                }
+                sourceUrl = await invoke('getm3u8', { url: song.url });
             } else if (sourceType === 'soundcloud') {
-                const urlSC: string = await invoke('getsoundcloud', { url: song.url });
-                if (urlSC) {
-                    audioRef.current.src = urlSC;
-                }
+                sourceUrl = await invoke('getsoundcloud', { url: song.url });
             } else {
-                audioRef.current.src = song.url;
+                sourceUrl = song.url;
             }
 
-            // Reset state for new song
-            setCurrentTime(0);
-            setDuration(0);
-            setCurrentSong(song);
+            if (sourceUrl) {
+                const wasPlaying = isPlaying || autoplay;
+                audioRef.current.src = sourceUrl;
+                setCurrentTime(0);
+                setDuration(0);
+                setCurrentSong(song);
 
-            if (isPlaying) {
-                try {
-                    await audioRef.current.play();
-                } catch (error) {
-                    console.error("Playback failed:", error);
-                    setIsPlaying(false);
+                if (wasPlaying) {
+                    try {
+                        await audioRef.current.play();
+                    } catch (error) {
+                        console.error("Auto-playback failed:", error);
+                    }
                 }
             }
         } catch (error) {
