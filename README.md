@@ -31,12 +31,12 @@ Online links are obtained using `yt-dlp`. If `yt-dlp` is not installed, online m
 
 3. Run the development server:
     ```sh
-    npm run dev
+    npm run tauri dev
     ```
 
 4. Build the application:
     ```sh
-    npm run build
+    npm run tauri build
     ```
 
 ## Configuration
