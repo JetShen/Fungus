@@ -76,5 +76,5 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 
 ## Acknowledgements
 
-- [Tauri](https://tauri.studio/)
+- [Tauri v1](https://v1.tauri.app/)
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
