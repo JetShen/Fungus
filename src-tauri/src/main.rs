@@ -3,6 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::os::windows::process::CommandExt;
 use std::process::Command;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -64,6 +65,7 @@ fn getm3u8(url: String) -> Result<String, String> {
         .arg("bestaudio")
         .arg("--no-playlist")
         .arg(url)
+        .creation_flags(0x08000000)
         .output()
         .expect("failed to execute process");
 
@@ -79,6 +81,7 @@ fn getsoundcloud(url: String) -> Result<String, String> {
         .arg("mp3")
         .arg("-g")
         .arg(url)
+        .creation_flags(0x08000000)
         .output()
         .expect("failed to execute process");
 
